@@ -21,6 +21,28 @@ const messages = {
     "sidebar.logout": "Logout",
     "settings.language": "Language",
   },
+  ru: {
+    "sidebar.library": "Библиотека",
+    "sidebar.allDrawings": "Все рисунки",
+    "sidebar.sharedWithMe": "Доступные мне",
+    "sidebar.unorganized": "Без коллекции",
+    "sidebar.collections": "Коллекции",
+    "sidebar.newCollection": "Новая коллекция",
+    "sidebar.newCollectionPlaceholder": "Новая коллекция…",
+    "sidebar.shared": "Общий доступ",
+    "sidebar.editor": "Редактор",
+    "sidebar.viewer": "Читатель",
+    "sidebar.owner": "Владелец",
+    "sidebar.deleteCollection": "Удалить коллекцию",
+    "sidebar.deleteCollectionMessage":
+      "Удалить эту коллекцию? Все рисунки из неё будут перемещены в раздел «Без коллекции».",
+    "sidebar.trash": "Корзина",
+    "sidebar.profile": "Профиль",
+    "sidebar.admin": "Администрирование",
+    "sidebar.settings": "Настройки",
+    "sidebar.logout": "Выйти",
+    "settings.language": "Язык",
+  },
   "zh-CN": {
     "sidebar.library": "资料库",
     "sidebar.allDrawings": "全部绘图",
@@ -48,8 +70,12 @@ const messages = {
 export type Locale = keyof typeof messages;
 export type TranslationKey = keyof (typeof messages)["en"];
 
-export const resolveLocale = (value: string | null | undefined): Locale =>
-  value?.toLowerCase().startsWith("zh") ? "zh-CN" : "en";
+export const resolveLocale = (value: string | null | undefined): Locale => {
+  const language = value?.trim().toLowerCase().split(/[-_]/)[0];
+  if (language === "ru") return "ru";
+  if (language === "zh") return "zh-CN";
+  return "en";
+};
 
 export const translate = (locale: Locale, key: TranslationKey): string =>
   messages[locale][key] ?? messages.en[key];

@@ -79,10 +79,13 @@ export const SettingsMainGrid = ({
           className="ui-input text-sm font-bold"
         >
           <option value="en">English</option>
+          <option value="ru-RU">Русский</option>
           <option value="zh-CN">简体中文</option>
-          {language !== "en" && language !== "zh-CN" && (
-            <option value={language}>{language} (editor language)</option>
-          )}
+          {language !== "en" &&
+            language !== "ru-RU" &&
+            language !== "zh-CN" && (
+              <option value={language}>{language} (editor language)</option>
+            )}
         </select>
       </SettingsRow>
 

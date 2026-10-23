@@ -9,7 +9,7 @@ import { useEditorPersistence } from "../src/pages/editor/useEditorPersistence";
 import { useEditorCommands } from "../src/pages/editor/useEditorCommands";
 import { ShareModal } from "../src/components/ShareModal";
 import * as api from "../src/api";
-import { exportToSvg } from "@excalidraw/excalidraw";
+import { exportScene } from "@excalidraw/excalidraw";
 import { saveDrawingKeepalive } from "../src/pages/editor/keepaliveSave";
 import type { DrawingSnapshotFull } from "../src/api";
 import { validateEmbeddableUrl } from "../src/pages/editor/shared";
@@ -39,7 +39,7 @@ vi.mock("@excalidraw/excalidraw", () => {
         Help: () => null,
       },
     }),
-    exportToSvg: vi.fn(async () => ({ outerHTML: "<svg />" })),
+    exportScene: vi.fn(async () => ({ outerHTML: "<svg />" })),
   };
 });
 vi.mock("../src/api", () => ({
@@ -74,7 +74,28 @@ vi.mock("sonner", () => ({
 }));
 
 const ref = <T,>(current: T) => ({ current });
-const liveElements = [{ id: "live", type: "rectangle", version: 9 }];
+const liveElements = [
+  { id: "live", type: "rectangle", version: 9 },
+  {
+    id: "note",
+    type: "stickynote",
+    version: 2,
+    width: 250,
+    height: 250,
+    baseHeight: 250,
+    created: 1792713600000,
+    boundElements: [{ id: "note-label", type: "text" }],
+  },
+  {
+    id: "note-label",
+    type: "text",
+    version: 2,
+    containerId: "note",
+    text: "Заметка",
+    baseFontSize: 20,
+    fontSize: 20,
+  },
+];
 const liveAppState = {
   viewBackgroundColor: "#ffffff",
   collaborators: new Map(),
@@ -291,7 +312,7 @@ describe("isolated history preview", () => {
     expect(preview.props.viewModeEnabled).toBe(true);
     for (const callback of [
       "onChange",
-      "excalidrawAPI",
+      "onExcalidrawAPI",
       "onPointerUpdate",
       "onLibraryChange",
     ]) {
@@ -317,8 +338,18 @@ describe("isolated history preview", () => {
       expect(data.elements).toEqual(liveElements);
       expect(data.files ?? {}).not.toHaveProperty("oldImage");
     });
-    expect(exportToSvg).toHaveBeenCalledWith(
-      expect.objectContaining({ elements: liveElements, files: liveFiles }),
+    expect(exportScene).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "svg",
+        data: expect.objectContaining({
+          elements: liveElements,
+          files: liveFiles,
+        }),
+        config: expect.objectContaining({
+          theme: "light",
+          canvasBackgroundColor: false,
+        }),
+      }),
     );
     expect(saveDrawingKeepalive).toHaveBeenCalledWith(
       "drawing",

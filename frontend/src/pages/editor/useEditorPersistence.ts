@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import type { MutableRefObject } from "react";
-import { exportToSvg } from "@excalidraw/excalidraw";
+import { exportScene } from "@excalidraw/excalidraw";
 import debounce from "lodash/debounce";
 import { toast } from "sonner";
 import * as api from "../../api";
@@ -379,17 +379,24 @@ export const useEditorPersistence = ({
           fallbackElementCount: currentSnapshot.length,
         });
       }
-      const svg = await exportToSvg({
-        elements: normalizedSnapshot,
-        appState: {
-          ...appState,
-          exportBackground: !isDefaultPreviewBackground(
-            appState.viewBackgroundColor,
-          ),
-          exportWithDarkMode: false,
-          viewBackgroundColor: appState.viewBackgroundColor || "#ffffff",
+      const svg = await exportScene({
+        type: "svg",
+        data: {
+          elements: normalizedSnapshot,
+          appState: {
+            ...appState,
+            viewBackgroundColor: appState.viewBackgroundColor || "#ffffff",
+          },
+          files: currentFiles,
         },
-        files: currentFiles,
+        config: {
+          theme: "light",
+          canvasBackgroundColor: isDefaultPreviewBackground(
+            appState.viewBackgroundColor,
+          )
+            ? false
+            : appState.viewBackgroundColor || "#ffffff",
+        },
       });
       if (
         !canEditRef.current ||

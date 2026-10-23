@@ -15,9 +15,6 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  DOCKERHUB_USERNAME: zimengxiong
-
 jobs:
   changes:
     name: Detect application changes
@@ -40,7 +37,7 @@ jobs:
             application=false
             while IFS= read -r -d '' path; do
               case "$path" in
-                docs/*|README.md|vercel.json|.github/workflows/test.yml) ;;
+                docs/*|README.md|vercel.json) ;;
                 *) application=true; break ;;
               esac
             done < <(git diff --name-only -z "$BASE_SHA" "$HEAD_SHA")
@@ -185,6 +182,7 @@ jobs:
       platforms: ${{ steps.metadata.outputs.platforms }}
       publish: ${{ steps.metadata.outputs.publish }}
       tags: ${{ steps.metadata.outputs.tags }}
+      image-prefix: ${{ steps.metadata.outputs.image_prefix }}
 
     steps:
       - name: Check out source
@@ -230,8 +228,10 @@ jobs:
           build_label="${image_tag}"
 
           tags="type=raw,value=${image_tag}"
+          image_prefix="ghcr.io/$(printf '%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
 
           {
+            echo "image_prefix=$image_prefix"
             echo "version=$version"
             echo "image_tag=$image_tag"
             echo "build_label=$build_label"
@@ -249,6 +249,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      packages: write
     uses: docker/github-builder/.github/workflows/build.yml@58cb9f5b71b1836d6f690c1e95effdeb9b98cb8a
     with:
       job-name-prefix: Backend
@@ -262,7 +263,7 @@ jobs:
       cache-scope: backend-image
       build-args: APP_BUILD_LABEL=${{ needs.release-metadata.outputs.build-label }}
       sbom: ${{ needs.release-metadata.outputs.publish == 'true' }}
-      meta-images: zimengxiong/excalidash-backend
+      meta-images: ${{ needs.release-metadata.outputs.image-prefix }}-backend
       meta-tags: ${{ needs.release-metadata.outputs.tags }}
       meta-labels: |
         org.opencontainers.image.source=https://github.com/${{ github.repository }}
@@ -270,9 +271,9 @@ jobs:
         org.opencontainers.image.version=${{ needs.release-metadata.outputs.image-tag }}
     secrets:
       registry-auths: |
-        - registry: docker.io
-          username: zimengxiong
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        - registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
   frontend-image:
     name: Frontend Image
@@ -280,6 +281,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      packages: write
     uses: docker/github-builder/.github/workflows/build.yml@58cb9f5b71b1836d6f690c1e95effdeb9b98cb8a
     with:
       job-name-prefix: Frontend
@@ -293,7 +295,7 @@ jobs:
       cache-scope: frontend-image
       sbom: ${{ needs.release-metadata.outputs.publish == 'true' }}
       build-args: VITE_APP_BUILD_LABEL=${{ needs.release-metadata.outputs.build-label }}
-      meta-images: zimengxiong/excalidash-frontend
+      meta-images: ${{ needs.release-metadata.outputs.image-prefix }}-frontend
       meta-tags: ${{ needs.release-metadata.outputs.tags }}
       meta-labels: |
         org.opencontainers.image.source=https://github.com/${{ github.repository }}
@@ -301,28 +303,41 @@ jobs:
         org.opencontainers.image.version=${{ needs.release-metadata.outputs.image-tag }}
     secrets:
       registry-auths: |
-        - registry: docker.io
-          username: zimengxiong
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        - registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
   image-builds:
     name: Container Image Builds
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE_PREFIX: ${{ needs.release-metadata.outputs.image-prefix }}
     needs: [release-metadata, backend-image, frontend-image]
     if: always() && needs.release-metadata.result == 'success' && needs.backend-image.result == 'success' && needs.frontend-image.result == 'success'
     runs-on: ubuntu-24.04
     outputs:
+      image-prefix: ${{ needs.release-metadata.outputs.image-prefix }}
       publish: ${{ needs.release-metadata.outputs.publish }}
       stable: ${{ needs.release-metadata.outputs.stable }}
       version: ${{ needs.release-metadata.outputs.version }}
       image-tag: ${{ needs.release-metadata.outputs.image-tag }}
 
     steps:
+      - name: Authenticate container verification
+        if: needs.release-metadata.outputs.publish == 'true'
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USERNAME: ${{ github.actor }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+
       - name: Verify published images
         if: needs.release-metadata.outputs.publish == 'true'
         shell: bash
         run: |
           for component in backend frontend; do
-            image="${DOCKERHUB_USERNAME}/excalidash-${component}:${{ needs.release-metadata.outputs.image-tag }}"
+            image="${IMAGE_PREFIX}-${component}:${{ needs.release-metadata.outputs.image-tag }}"
             docker buildx imagetools inspect "$image" --raw | jq -e '
               [.manifests[].platform | select(.os == "linux") | .architecture] as $architectures
               | ($architectures | index("amd64") != null) and ($architectures | index("arm64") != null)
@@ -335,19 +350,20 @@ jobs:
 
       - name: Verify frontend ports and non-root execution
         if: needs.release-metadata.outputs.publish == 'true'
-        run: sh scripts/test-frontend-container.sh "${DOCKERHUB_USERNAME}/excalidash-frontend:${{ needs.release-metadata.outputs.image-tag }}"
+        run: sh scripts/test-frontend-container.sh "${IMAGE_PREFIX}-frontend:${{ needs.release-metadata.outputs.image-tag }}"
 
       - name: Promote verified image pair
         if: needs.release-metadata.outputs.publish == 'true'
         env:
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USERNAME: ${{ github.actor }}
           FLOATING_TAG: ${{ needs.release-metadata.outputs.stable == 'true' && 'latest' || 'dev' }}
         shell: bash
         run: |
-          printf '%s' "$DOCKERHUB_TOKEN" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-          trap 'docker logout >/dev/null 2>&1' EXIT
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+          trap 'docker logout ghcr.io >/dev/null 2>&1' EXIT
           for component in backend frontend; do
-            image="${DOCKERHUB_USERNAME}/excalidash-${component}"
+            image="${IMAGE_PREFIX}-${component}"
             docker buildx imagetools create \
               --tag "${image}:${FLOATING_TAG}" \
               "${image}:${{ needs.release-metadata.outputs.image-tag }}"
@@ -404,6 +420,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           IMAGE_TAG: ${{ needs.image-builds.outputs.image-tag }}
+          IMAGE_PREFIX: ${{ needs.image-builds.outputs.image-prefix }}
         run: |
           tag="v${IMAGE_TAG}"
           if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
@@ -413,7 +430,7 @@ jobs:
           gh release create "$tag" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --notes "Development container images: ${DOCKERHUB_USERNAME}/excalidash-backend:${IMAGE_TAG} and ${DOCKERHUB_USERNAME}/excalidash-frontend:${IMAGE_TAG}." \
+            --notes "Development container images: ${IMAGE_PREFIX}-backend:${IMAGE_TAG} and ${IMAGE_PREFIX}-frontend:${IMAGE_TAG}." \
             --prerelease \
             --title "ExcaliDash ${IMAGE_TAG}"
 
