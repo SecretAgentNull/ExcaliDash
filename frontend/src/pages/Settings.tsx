@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useTranslation } from "../context/useTranslation";
+import React, { useCallback, useEffect, useState } from "react";
 import { Layout } from "../components/Layout";
 import { useNavigate } from "react-router-dom";
 import * as api from "../api";
@@ -24,6 +25,8 @@ import {
   writeImageCompressionThresholdMb,
 } from "../utils/imageCompressionSettings";
 export const Settings: React.FC = () => {
+  const tr = useTranslation();
+
   const [collections, setCollections] = useState<Collection[]>([]);
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
@@ -82,7 +85,7 @@ export const Settings: React.FC = () => {
     isOpen: boolean;
     message: string;
   }>({ isOpen: false, message: "" });
-  const appVersion = import.meta.env.VITE_APP_VERSION || "Unknown version";
+  const appVersion = import.meta.env.VITE_APP_VERSION || tr("Unknown version");
   const buildLabel = import.meta.env.VITE_APP_BUILD_LABEL;
   const isManagedAuthMode = authMode !== "local";
   const UPDATE_CHANNEL_KEY = "excalidash-update-channel";
@@ -131,34 +134,37 @@ export const Settings: React.FC = () => {
     resetImageCompressionMemo();
     setImageCompressionThresholdMb(next);
   };
-  const checkForUpdates = async (channel: api.UpdateChannel) => {
-    setUpdateLoading(true);
-    setUpdateError(null);
-    try {
-      const info = await api.getUpdateInfo(channel);
-      setUpdateInfo(info);
+  const checkForUpdates = useCallback(
+    async (channel: api.UpdateChannel) => {
+      setUpdateLoading(true);
+      setUpdateError(null);
       try {
-        window.localStorage?.setItem?.(
-          `${UPDATE_INFO_KEY}:${channel}`,
-          JSON.stringify(info),
-        );
-      } catch {
-        // Ignore unavailable storage in private/embedded contexts.
+        const info = await api.getUpdateInfo(channel);
+        setUpdateInfo(info);
+        try {
+          window.localStorage?.setItem?.(
+            `${UPDATE_INFO_KEY}:${channel}`,
+            JSON.stringify(info),
+          );
+        } catch {
+          // Ignore unavailable storage in private/embedded contexts.
+        }
+      } catch (err: unknown) {
+        let message = tr("Failed to check for updates");
+        if (api.isAxiosError(err)) {
+          message =
+            err.response?.data?.message || err.response?.data?.error || message;
+        }
+        setUpdateError(message);
+      } finally {
+        setUpdateLoading(false);
       }
-    } catch (err: unknown) {
-      let message = "Failed to check for updates";
-      if (api.isAxiosError(err)) {
-        message =
-          err.response?.data?.message || err.response?.data?.error || message;
-      }
-      setUpdateError(message);
-    } finally {
-      setUpdateLoading(false);
-    }
-  };
+    },
+    [tr],
+  );
   useEffect(() => {
     void checkForUpdates(updateChannel);
-  }, [updateChannel]);
+  }, [updateChannel, checkForUpdates]);
   const setAuthEnabled = async (enabled: boolean) => {
     setAuthToggleLoading(true);
     setAuthToggleError(null);
@@ -175,7 +181,7 @@ export const Settings: React.FC = () => {
       }
       window.location.reload();
     } catch (err: unknown) {
-      let message = "Failed to update authentication setting";
+      let message = tr("Failed to update authentication setting");
       if (api.isAxiosError(err)) {
         message =
           err.response?.data?.message || err.response?.data?.error || message;
@@ -209,7 +215,7 @@ export const Settings: React.FC = () => {
       console.error("Backup export failed:", err);
       setBackupImportError({
         isOpen: true,
-        message: "Failed to export backup. Please try again.",
+        message: tr("Failed to export backup. Please try again."),
       });
     }
   };
@@ -217,7 +223,7 @@ export const Settings: React.FC = () => {
     if (!isExcalidashFile(file)) {
       setBackupImportError({
         isOpen: true,
-        message: EXCALIDASH_REQUIRED_MESSAGE,
+        message: tr(EXCALIDASH_REQUIRED_MESSAGE),
       });
       return;
     }
@@ -249,7 +255,7 @@ export const Settings: React.FC = () => {
       });
     } catch (err: unknown) {
       console.error("Backup verify failed:", err);
-      let message = "Failed to verify backup file.";
+      let message = tr("Failed to verify backup file.");
       if (api.isAxiosError(err)) {
         message =
           err.response?.data?.message || err.response?.data?.error || message;
@@ -285,7 +291,7 @@ export const Settings: React.FC = () => {
       });
     } catch (err: unknown) {
       console.error("Legacy DB verify failed:", err);
-      let message = "Failed to verify legacy database file.";
+      let message = tr("Failed to verify legacy database file.");
       if (api.isAxiosError(err)) {
         message =
           err.response?.data?.message || err.response?.data?.error || message;
@@ -326,19 +332,22 @@ export const Settings: React.FC = () => {
     >
       {" "}
       <div className="mx-auto w-full max-w-3xl">
-        <Toaster position="top-right" />
+        <Toaster
+          containerAriaLabel={tr("Notifications")}
+          position="top-right"
+        />
         <h1
           className="text-3xl sm:text-4xl lg:text-5xl mb-6 lg:mb-8 text-slate-900 dark:text-white pl-1"
           style={{ fontFamily: displayFontFamily }}
         >
           {" "}
-          Settings{" "}
+          {tr("Settings")}{" "}
         </h1>{" "}
         {authToggleError && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl">
             {" "}
             <p className="text-red-800 dark:text-red-200 font-medium">
-              {authToggleError}
+              {tr(authToggleError)}
             </p>{" "}
           </div>
         )}{" "}

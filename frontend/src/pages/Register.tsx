@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Check, Copy } from "lucide-react";
@@ -9,6 +10,8 @@ import { PasswordRequirements } from "../components/PasswordRequirements";
 import { AuthStatusErrorPanel } from "../components/AuthStatusErrorPanel";
 
 export const Register: React.FC = () => {
+  const tr = useTranslation();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -32,7 +35,7 @@ export const Register: React.FC = () => {
   } = useAuth();
   const navigate = useNavigate();
 
-  const passwordPolicy = getPasswordPolicy();
+  const passwordPolicy = getPasswordPolicy(undefined, tr);
 
   const bootstrapLogsCommand =
     'docker compose -f docker-compose.prod.yml logs backend --tail=200 | grep "BOOTSTRAP SETUP"';
@@ -107,13 +110,13 @@ export const Register: React.FC = () => {
     e.preventDefault();
     setError("");
 
-    const passwordError = validatePassword(password, passwordPolicy);
+    const passwordError = validatePassword(password, passwordPolicy, tr);
     if (passwordError) {
       setError(passwordError);
       return;
     }
     if (bootstrapRequired && setupCode.trim().length === 0) {
-      setError("Bootstrap setup code is required");
+      setError(tr("Bootstrap setup code is required"));
       return;
     }
 
@@ -128,7 +131,8 @@ export const Register: React.FC = () => {
       );
       navigate("/");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to register";
+      const message =
+        err instanceof Error ? err.message : tr("Failed to register");
       setError(message);
     } finally {
       setLoading(false);
@@ -146,16 +150,18 @@ export const Register: React.FC = () => {
         <div className="text-center">
           <Logo className="mx-auto h-12 w-auto" />
           <h2 className="auth-heading">
-            {bootstrapRequired ? "Set up admin account" : "Create your account"}
+            {bootstrapRequired
+              ? tr("Set up admin account")
+              : tr("Create your account")}
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             {bootstrapRequired ? (
-              <span>Create the first admin account.</span>
+              <span>{tr("Create the first admin account.")}</span>
             ) : (
               <>
-                Or{" "}
+                {tr("Or")}{" "}
                 <Link to="/login" className="ui-link">
-                  sign in to your existing account
+                  {tr("sign in to your existing account")}{" "}
                 </Link>
               </>
             )}
@@ -164,9 +170,9 @@ export const Register: React.FC = () => {
         <form className="auth-panel" onSubmit={handleSubmit}>
           {bootstrapRequired && (
             <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-3 text-left text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
-              <div className="font-semibold">One-time setup code</div>
+              <div className="font-semibold">{tr("One-time setup code")}</div>
               <div className="mt-1 text-amber-800 dark:text-amber-200">
-                Copy it from the backend logs:
+                {tr("Copy it from the backend logs:")}{" "}
               </div>
               <div className="mt-2 rounded bg-white dark:bg-neutral-900 p-2">
                 <div className="flex items-start gap-2">
@@ -179,10 +185,10 @@ export const Register: React.FC = () => {
                     className="ui-icon-button h-7 w-7 shrink-0"
                     aria-label={
                       copiedBootstrapCmd
-                        ? "Copied docker command"
-                        : "Copy docker command"
+                        ? tr("Copied docker command")
+                        : tr("Copy docker command")
                     }
-                    title={copiedBootstrapCmd ? "Copied" : "Copy"}
+                    title={copiedBootstrapCmd ? tr("Copied") : tr("Copy")}
                   >
                     {copiedBootstrapCmd ? (
                       <Check size={14} />
@@ -196,7 +202,7 @@ export const Register: React.FC = () => {
           )}
           {error && (
             <div className="ui-alert-error">
-              <div>{error}</div>
+              <div>{tr(error)}</div>
             </div>
           )}
 
@@ -208,10 +214,10 @@ export const Register: React.FC = () => {
                 disabled={loading}
                 className="ui-button-secondary w-full"
               >
-                Set up admin with {oidcProvider || "OIDC"}
+                {tr("Set up admin with")} {oidcProvider || "OIDC"}
               </button>
               <div className="text-center text-xs text-gray-500 dark:text-gray-400">
-                Or use a local account
+                {tr("Or use a local account")}{" "}
               </div>
             </div>
           )}
@@ -219,7 +225,7 @@ export const Register: React.FC = () => {
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="name" className="sr-only">
-                Name
+                {tr("Name")}{" "}
               </label>
               <input
                 id="name"
@@ -228,14 +234,14 @@ export const Register: React.FC = () => {
                 autoComplete="name"
                 required
                 className="ui-input block w-full"
-                placeholder="Your name"
+                placeholder={tr("Your name")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
             <div>
               <label htmlFor="email" className="sr-only">
-                Email address
+                {tr("Email address")}{" "}
               </label>
               <input
                 id="email"
@@ -244,14 +250,14 @@ export const Register: React.FC = () => {
                 autoComplete="email"
                 required
                 className="ui-input block w-full"
-                placeholder="Email address"
+                placeholder={tr("Email address")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
-                Password
+                {tr("Password")}{" "}
               </label>
               <input
                 id="password"
@@ -263,7 +269,7 @@ export const Register: React.FC = () => {
                 maxLength={passwordPolicy.maxLength}
                 pattern={passwordPolicy.patternHtml}
                 className="ui-input block w-full"
-                placeholder="Password"
+                placeholder={tr("Password")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -276,7 +282,7 @@ export const Register: React.FC = () => {
             {bootstrapRequired && (
               <div>
                 <label htmlFor="setupCode" className="sr-only">
-                  Bootstrap setup code
+                  {tr("Bootstrap setup code")}{" "}
                 </label>
                 <input
                   id="setupCode"
@@ -285,7 +291,7 @@ export const Register: React.FC = () => {
                   autoComplete="one-time-code"
                   required
                   className="ui-input block w-full border-amber-300 dark:border-amber-700"
-                  placeholder="One-time setup code"
+                  placeholder={tr("One-time setup code")}
                   value={setupCode}
                   onChange={(e) => setSetupCode(e.target.value.toUpperCase())}
                 />
@@ -299,7 +305,7 @@ export const Register: React.FC = () => {
               disabled={loading}
               className="ui-button-primary w-full"
             >
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? tr("Creating account...") : tr("Create account")}
             </button>
           </div>
         </form>

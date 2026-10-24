@@ -35,9 +35,12 @@ prerelease builds can change the embedding API. This build uses `onExcalidrawAPI
 for the editor callback and `exportScene` for SVG previews.
 
 Russian is available as **Русский** in **Settings → Language**, and the same
-saved preference selects the editor's built-in `ru-RU` translation. The dashboard
-translation currently covers navigation and the language setting, matching the
-existing localization coverage; other application screens still use English.
+saved preference selects the editor's built-in `ru-RU` translation. Russian covers settings, dashboard controls, editor chrome, sharing, history,
+profile, sign-in, onboarding, and administration. Source strings live in
+`frontend/src/locales/ru.ts`; `useTranslation` rerenders UI when the saved locale
+changes. Editor effects use `useEventTranslation` so a language change does not
+reload a drawing or reconnect collaboration. Unknown server diagnostics remain
+unchanged instead of being hidden.
 
 ## Configure the apps
 

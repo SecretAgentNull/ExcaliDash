@@ -1,3 +1,4 @@
+import { englishTranslation, type Translator } from "../locales";
 import { api } from "../api";
 import { type UploadStatus } from "../context/UploadContext";
 import {
@@ -25,13 +26,14 @@ export const importDrawings = async (
     progress: number,
     error?: string,
   ) => void,
+  tr: Translator = englishTranslation,
 ) => {
   const drawingFiles = files.filter(
     (f) => f.name.endsWith(".json") || f.name.endsWith(".excalidraw"),
   );
 
   if (drawingFiles.length === 0) {
-    return { success: 0, failed: 0, errors: ["No supported files found."] };
+    return { success: 0, failed: 0, errors: [tr("No supported files found.")] };
   }
 
   let successCount = 0;
@@ -53,7 +55,10 @@ export const importDrawings = async (
         const text = await file.text();
         const parsed = JSON.parse(text) as unknown;
         const extracted = extractDrawingData(parsed);
-        if (!extracted) throw new Error(`Invalid file structure: ${file.name}`);
+        if (!extracted)
+          throw new Error(
+            tr("Invalid file structure: {0}", { "0": file.name }),
+          );
 
         const svg = await makeSvgPreview(
           extracted.elements,
@@ -97,7 +102,7 @@ export const importDrawings = async (
           err?.response?.data?.message ||
           err?.response?.data?.error ||
           err?.message ||
-          "Upload failed";
+          tr("Upload failed");
         errors.push(`${file.name}: ${errorMessage}`);
         if (onProgress) onProgress(fileIndex, "error", 0, errorMessage);
       }
@@ -126,6 +131,7 @@ export const importLegacyFiles = async (
     progress: number,
     error?: string,
   ) => void,
+  tr: Translator = englishTranslation,
 ) => {
   const drawingFiles = files.filter(
     (f) =>
@@ -135,7 +141,7 @@ export const importLegacyFiles = async (
   );
 
   if (drawingFiles.length === 0) {
-    return { success: 0, failed: 0, errors: ["No supported files found."] };
+    return { success: 0, failed: 0, errors: [tr("No supported files found.")] };
   }
 
   let successCount = 0;
@@ -157,7 +163,7 @@ export const importLegacyFiles = async (
         if (onProgress) onProgress(fileIndex, "processing", 0);
 
         if (file.name.endsWith(".zip")) {
-          const result = await importLegacyZip(file, targetCollectionId);
+          const result = await importLegacyZip(file, targetCollectionId, tr);
           successCount += result.success;
           failCount += result.failed;
           errors.push(...result.errors);
@@ -181,7 +187,7 @@ export const importLegacyFiles = async (
             : [];
 
           if (drawings.length === 0) {
-            throw new Error("Legacy export JSON contains no drawings.");
+            throw new Error(tr("Legacy export JSON contains no drawings."));
           }
 
           for (let i = 0; i < drawings.length; i += 1) {
@@ -190,7 +196,10 @@ export const importLegacyFiles = async (
             if (!extracted) {
               failCount += 1;
               errors.push(
-                `${file.name}: drawing ${i + 1}: Invalid structure (missing elements/appState)`,
+                tr(
+                  "{0}: drawing {1}: Invalid structure (missing elements/appState)",
+                  { "0": file.name, "1": i + 1 },
+                ),
               );
               continue;
             }
@@ -225,7 +234,7 @@ export const importLegacyFiles = async (
               name:
                 typeof d.name === "string" && d.name.trim().length > 0
                   ? d.name
-                  : `Imported Drawing ${i + 1}`,
+                  : tr("Imported Drawing {0}", { "0": i + 1 }),
               elements: extracted.elements,
               appState: extracted.appState,
               files: extracted.files || null,
@@ -266,6 +275,7 @@ export const importLegacyFiles = async (
             targetCollectionId,
             undefined,
             mappedOnProgress,
+            tr,
           );
           successCount += result.success;
           failCount += result.failed;
@@ -273,7 +283,7 @@ export const importLegacyFiles = async (
           return;
         }
 
-        throw new Error(`Invalid file structure: ${file.name}`);
+        throw new Error(tr("Invalid file structure: {0}", { "0": file.name }));
       } catch (err: any) {
         console.error(`Failed to import ${file.name}:`, err);
         failCount += 1;
@@ -281,7 +291,7 @@ export const importLegacyFiles = async (
           err?.response?.data?.message ||
           err?.response?.data?.error ||
           err?.message ||
-          "Upload failed";
+          tr("Upload failed");
         errors.push(`${file.name}: ${errorMessage}`);
         if (onProgress) onProgress(fileIndex, "error", 0, errorMessage);
       }

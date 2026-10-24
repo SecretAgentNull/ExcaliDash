@@ -1,3 +1,4 @@
+import { useTranslation } from "../../context/useTranslation";
 import React from "react";
 import { Calendar, Clock, FileText } from "lucide-react";
 import type { DrawingSortField, SortDirection } from "../../api";
@@ -15,17 +16,25 @@ const isSortField = (value: unknown): value is DrawingSortField =>
 const isSortDirection = (value: unknown): value is SortDirection =>
   value === "asc" || value === "desc";
 
-const sortOptions: {
-  field: DrawingSortField;
-  label: string;
-  icon: React.ReactNode;
-}[] = [
-  { field: "name", label: "Name", icon: <FileText size={16} /> },
-  { field: "createdAt", label: "Date Created", icon: <Calendar size={16} /> },
-  { field: "updatedAt", label: "Date Modified", icon: <Clock size={16} /> },
-];
-
 export const useDashboardSort = () => {
+  const tr = useTranslation();
+  const sortOptions: {
+    field: DrawingSortField;
+    label: string;
+    icon: React.ReactNode;
+  }[] = [
+    { field: "name", label: tr("Name"), icon: <FileText size={16} /> },
+    {
+      field: "createdAt",
+      label: tr("Date Created"),
+      icon: <Calendar size={16} />,
+    },
+    {
+      field: "updatedAt",
+      label: tr("Date Modified"),
+      icon: <Clock size={16} />,
+    },
+  ];
   // Server-backed via the shared preferences context, which owns the
   // no-clobber-on-first-mount gate and refetch-on-user-change behavior.
   const { updatePreferences } = usePreferences();

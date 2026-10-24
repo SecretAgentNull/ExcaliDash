@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
@@ -31,6 +32,8 @@ export const ShareModal: React.FC<Props> = ({
   onClose,
   anchorRef,
 }) => {
+  const tr = useTranslation();
+
   const [position, setPosition] = useState({ right: 12, top: 72 });
   useEffect(() => {
     if (!isOpen) return;
@@ -102,7 +105,7 @@ export const ShareModal: React.FC<Props> = ({
       const data = await api.getDrawingSharing(drawingId);
       setSharing(data);
     } catch (err: unknown) {
-      let message = "Failed to load sharing settings";
+      let message = tr("Failed to load sharing settings");
       if (api.isAxiosError(err)) {
         const serverMessage =
           typeof err.response?.data?.message === "string"
@@ -114,7 +117,7 @@ export const ShareModal: React.FC<Props> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [drawingId]);
+  }, [tr, drawingId]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -189,7 +192,7 @@ export const ShareModal: React.FC<Props> = ({
       setUserQuery("");
       setUserResults([]);
     } catch (err: unknown) {
-      let message = "Failed to share with user";
+      let message = tr("Failed to share with user");
       if (api.isAxiosError(err)) {
         const serverMessage =
           typeof err.response?.data?.message === "string"
@@ -210,7 +213,7 @@ export const ShareModal: React.FC<Props> = ({
       await api.revokeDrawingPermission(drawingId, permissionId);
       await refresh();
     } catch {
-      setError("Failed to revoke access");
+      setError(tr("Failed to revoke access"));
     } finally {
       setIsLoading(false);
     }
@@ -229,7 +232,7 @@ export const ShareModal: React.FC<Props> = ({
       });
       await refresh();
     } catch (err: unknown) {
-      let message = "Failed to update access";
+      let message = tr("Failed to update access");
       if (api.isAxiosError(err)) {
         const serverMessage =
           typeof err.response?.data?.message === "string"
@@ -264,7 +267,7 @@ export const ShareModal: React.FC<Props> = ({
       await refresh();
       void handleCopy(shareableEditorUrl);
     } catch (err: unknown) {
-      let message = "Failed to update link";
+      let message = tr("Failed to update link");
       if (api.isAxiosError(err)) {
         const serverMessage =
           typeof err.response?.data?.message === "string"
@@ -286,7 +289,7 @@ export const ShareModal: React.FC<Props> = ({
       await api.revokeLinkShare(drawingId, activeLink.id);
       await refresh();
     } catch {
-      setError("Failed to revoke link");
+      setError(tr("Failed to revoke link"));
     } finally {
       setIsLoading(false);
     }
@@ -307,7 +310,7 @@ export const ShareModal: React.FC<Props> = ({
       <div
         style={position}
         role="dialog"
-        aria-label="Share drawing"
+        aria-label={tr("Share drawing")}
         className="fixed z-[160] flex max-h-[calc(100dvh-5rem)] w-[min(460px,calc(100vw-24px))] flex-col overflow-hidden rounded-2xl border-2 border-slate-800 bg-white font-sans shadow-[3px_3px_0px_0px_rgba(30,41,59,0.9)] animate-in fade-in slide-in-from-top-3 duration-200 dark:border-neutral-600 dark:bg-neutral-900 dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.18)]"
       >
         {/* Content */}
@@ -315,7 +318,7 @@ export const ShareModal: React.FC<Props> = ({
           {error && (
             <div className="flex items-center gap-2.5 rounded-xl border-2 border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-600 dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-400">
               <AlertTriangle size={16} strokeWidth={2} />
-              {error}
+              {tr(error)}
             </div>
           )}
 
@@ -361,7 +364,7 @@ export const ShareModal: React.FC<Props> = ({
             ) : (
               <LinkIcon size={14} strokeWidth={2.5} />
             )}
-            {isCopied ? "Copied Link!" : "Copy Link"}
+            {isCopied ? tr("Copied Link!") : tr("Copy Link")}
           </button>
         </div>
 
@@ -369,7 +372,7 @@ export const ShareModal: React.FC<Props> = ({
           <div
             className="absolute inset-0 bg-white/20 dark:bg-black/10 backdrop-blur-[1px] flex items-center justify-center z-[300] pointer-events-none rounded-[14px]"
             role="status"
-            aria-label="Updating sharing settings"
+            aria-label={tr("Updating sharing settings")}
           >
             <div className="ui-popover p-4">
               <RefreshCw

@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import React from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle, CheckCircle, X } from "lucide-react";
@@ -19,14 +20,16 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   isOpen,
   title,
   message,
-  confirmText = "Delete",
-  cancelText = "Cancel",
+  confirmText,
+  cancelText,
   onConfirm,
   onCancel,
   isDangerous = true,
   showCancel = true,
   variant = "warning",
 }) => {
+  const tr = useTranslation();
+
   if (!isOpen) return null;
 
   const isSuccess = variant === "success";
@@ -46,7 +49,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         <button
           onClick={onCancel}
           className="ui-icon-button absolute right-4 top-4 h-8 w-8 border-transparent bg-transparent shadow-none dark:bg-transparent"
-          aria-label="Close"
+          aria-label={tr("Close")}
         >
           <X size={20} />
         </button>
@@ -58,10 +61,10 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
           <div className="space-y-2">
             <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
-              {title}
+              {tr(title)}
             </h3>
             <div className="text-sm font-medium text-neutral-500 dark:text-neutral-400 leading-relaxed">
-              {message}
+              {typeof message === "string" ? tr(message) : message}
             </div>
           </div>
 
@@ -71,7 +74,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
                 onClick={onCancel}
                 className="ui-button-secondary flex-1 px-4 py-2.5"
               >
-                {cancelText}
+                {cancelText ?? tr("Cancel")}
               </button>
             )}
 
@@ -81,7 +84,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
                 isDangerous ? "ui-button-danger" : "ui-button-primary"
               }`}
             >
-              {confirmText}
+              {confirmText ?? tr("Delete")}
             </button>
           </div>
         </div>

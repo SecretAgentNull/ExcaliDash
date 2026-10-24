@@ -1,3 +1,4 @@
+import { useTranslation } from "../../context/useTranslation";
 import React, { useState } from "react";
 import { ShieldCheck, User, UserCog } from "lucide-react";
 import { PasswordRequirements } from "../../components/PasswordRequirements";
@@ -31,6 +32,8 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  const tr = useTranslation();
+
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -53,7 +56,9 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   };
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const error = oidcOnly ? null : validatePassword(password, passwordPolicy);
+    const error = oidcOnly
+      ? null
+      : validatePassword(password, passwordPolicy, tr);
     if (error) {
       setValidationError(error);
       return;
@@ -78,18 +83,18 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           <UserCog size={24} className="text-indigo-600 dark:text-indigo-400" />
         </div>
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Create User
+          {tr("Create User")}{" "}
         </h2>
       </div>
       <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {validationError && (
           <p className="md:col-span-2 text-sm font-medium text-red-600">
-            {validationError}
+            {tr(validationError)}
           </p>
         )}
         <div>
           <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
-            Email
+            {tr("Email")}{" "}
           </label>
           <input
             type="email"
@@ -101,7 +106,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         </div>
         <div>
           <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
-            Name
+            {tr("Name")}{" "}
           </label>
           <input
             type="text"
@@ -113,7 +118,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         </div>
         <div>
           <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
-            Username (optional)
+            {tr("Username (optional)")}{" "}
           </label>
           <input
             type="text"
@@ -124,7 +129,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         </div>
         <div>
           <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
-            Account Type
+            {tr("Account Type")}{" "}
           </label>
           <button
             type="button"
@@ -140,18 +145,20 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
                 : "border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300"
             } ${!oidcEnabled ? "opacity-60 cursor-not-allowed" : ""}`}
           >
-            {oidcOnly ? "OIDC-only invite" : "Local password account"}
+            {oidcOnly ? tr("OIDC-only invite") : tr("Local password account")}
           </button>
           <p className="mt-2 text-xs text-slate-500 dark:text-neutral-400">
             {oidcOnly
-              ? "This user can sign in through OIDC when the IdP email matches. No local password is stored."
-              : "This user can sign in with a local password."}
+              ? tr(
+                  "This user can sign in through OIDC when the IdP email matches. No local password is stored.",
+                )
+              : tr("This user can sign in with a local password.")}
           </p>
         </div>
         {!oidcOnly && (
           <div>
             <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
-              Temporary Password
+              {tr("Temporary Password")}{" "}
             </label>
             <input
               type="password"
@@ -172,17 +179,17 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         )}
         <div>
           <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
-            Role
+            {tr("Role")}{" "}
           </label>
           <PlayfulSelect
-            ariaLabel="Role"
+            ariaLabel={tr("Role")}
             value={role}
             onChange={(value) => setRole(value as "ADMIN" | "USER")}
             options={[
-              { value: "USER", label: "USER", icon: <User size={14} /> },
+              { value: "USER", label: tr("USER"), icon: <User size={14} /> },
               {
                 value: "ADMIN",
-                label: "ADMIN",
+                label: tr("ADMIN"),
                 icon: <ShieldCheck size={14} />,
               },
             ]}
@@ -193,7 +200,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
           <div className="flex-1 w-full">
             <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
-              Password Reset
+              {tr("Password Reset")}{" "}
             </label>
             <button
               type="button"
@@ -206,15 +213,15 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
               } ${oidcOnly ? "opacity-60 cursor-not-allowed" : ""}`}
             >
               {oidcOnly
-                ? "Not used for OIDC-only"
+                ? tr("Not used for OIDC-only")
                 : mustReset
-                  ? "Must reset password"
-                  : "No reset required"}
+                  ? tr("Must reset password")
+                  : tr("No reset required")}
             </button>
           </div>
           <div className="flex-1 w-full">
             <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
-              Account Status
+              {tr("Account Status")}{" "}
             </label>
             <button
               type="button"
@@ -225,7 +232,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
                   : "border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300"
               }`}
             >
-              {active ? "Active" : "Inactive"}
+              {active ? tr("Active") : tr("Inactive")}
             </button>
           </div>
         </div>
@@ -238,10 +245,10 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
             }}
             className="ui-button-secondary px-4"
           >
-            Cancel
+            {tr("Cancel")}{" "}
           </button>
           <button type="submit" className="ui-button-primary px-4">
-            Create
+            {tr("Create")}{" "}
           </button>
         </div>
       </form>

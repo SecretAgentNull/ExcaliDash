@@ -1,6 +1,7 @@
+import { useTranslation } from "../context/useTranslation";
 import React, { useState, useEffect } from "react";
 import { Layout } from "../components/Layout";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../api";
 import type { Collection } from "../types";
@@ -17,6 +18,8 @@ import {
 } from "./settings/SettingsRow";
 
 export const Profile: React.FC = () => {
+  const tr = useTranslation();
+
   const {
     user: authUser,
     logout,
@@ -79,11 +82,11 @@ export const Profile: React.FC = () => {
 
   const handleUpdateName = async () => {
     if (mustResetPassword) {
-      setError("You must reset your password before updating your profile");
+      setError(tr("You must reset your password before updating your profile"));
       return;
     }
     if (!name.trim()) {
-      setError("Name cannot be empty");
+      setError(tr("Name cannot be empty"));
       return;
     }
 
@@ -101,12 +104,12 @@ export const Profile: React.FC = () => {
           updatedAt: string;
         };
       }>("/auth/profile", { name: name.trim() });
-      setSuccess("Name updated successfully");
+      setSuccess(tr("Name updated successfully"));
       if (response.data?.user) {
         updateUser(response.data.user);
       }
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Failed to update name"));
+      setError(getApiErrorMessage(err, tr("Failed to update name")));
     } finally {
       setLoading(false);
     }
@@ -114,15 +117,15 @@ export const Profile: React.FC = () => {
 
   const handleUpdateEmail = async () => {
     if (mustResetPassword) {
-      setError("You must reset your password before changing your email");
+      setError(tr("You must reset your password before changing your email"));
       return;
     }
     if (!email.trim()) {
-      setError("Email cannot be empty");
+      setError(tr("Email cannot be empty"));
       return;
     }
     if (!emailCurrentPassword) {
-      setError("Current password is required to change email");
+      setError(tr("Current password is required to change email"));
       return;
     }
 
@@ -146,11 +149,11 @@ export const Profile: React.FC = () => {
 
       updateUser(response.data.user);
 
-      setSuccess("Email updated successfully");
+      setSuccess(tr("Email updated successfully"));
       setShowEmailForm(false);
       setEmailCurrentPassword("");
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Failed to update email"));
+      setError(getApiErrorMessage(err, tr("Failed to update email")));
     } finally {
       setEmailLoading(false);
     }
@@ -170,7 +173,7 @@ export const Profile: React.FC = () => {
           className="text-3xl sm:text-5xl mb-6 sm:mb-8 text-slate-900 dark:text-white pl-1"
           style={{ fontFamily: displayFontFamily }}
         >
-          Profile
+          {tr("Profile")}{" "}
         </h1>
 
         {success && (
@@ -183,21 +186,44 @@ export const Profile: React.FC = () => {
         {error && (
           <div className="mb-4 p-3.5 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl">
             <p className="text-red-800 dark:text-red-200 font-medium">
-              {error}
+              {tr(error)}
             </p>
           </div>
         )}
 
         <div className="space-y-6">
+          {authEnabled === false && (
+            <SettingsCard>
+              <section className="space-y-4 px-5 py-6 sm:px-6">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  {tr("Single-user mode")}
+                </h2>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-neutral-300">
+                  {tr(
+                    "Authentication is disabled for this workspace. Enable sign-in in Settings to create an account and manage your name, email, and password.",
+                  )}
+                </p>
+                <Link
+                  to="/settings"
+                  className={`${settingsPrimaryButtonClass} inline-flex`}
+                >
+                  {tr("Open settings")}
+                </Link>
+              </section>
+            </SettingsCard>
+          )}
+
           {authEnabled ? (
             <section>
               {mustResetPassword && (
                 <div className="mb-3 p-3.5 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-xl">
                   <p className="text-amber-900 dark:text-amber-200 font-bold">
-                    Password reset required
+                    {tr("Password reset required")}{" "}
                   </p>
                   <p className="text-xs text-amber-800 dark:text-amber-200/80 font-medium mt-0.5">
-                    Change your password below before using ExcaliDash.
+                    {tr(
+                      "Change your password below before using ExcaliDash.",
+                    )}{" "}
                   </p>
                 </div>
               )}
@@ -210,12 +236,12 @@ export const Profile: React.FC = () => {
                       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                         <input
                           id="name"
-                          aria-label="Display name"
+                          aria-label={tr("Display name")}
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           className={`${settingsSelectClass} min-w-40 flex-1`}
-                          placeholder="Your name"
+                          placeholder={tr("Your name")}
                         />
                         <button
                           onClick={handleUpdateName}
@@ -228,7 +254,7 @@ export const Profile: React.FC = () => {
                           className={settingsPrimaryButtonClass}
                         >
                           <Save size={14} />
-                          Save
+                          {tr("Save")}{" "}
                         </button>
                       </div>
                     </div>
@@ -238,7 +264,7 @@ export const Profile: React.FC = () => {
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                     <div className="min-w-0 flex-1 basis-40">
                       <h3 className="text-sm font-bold text-slate-900 dark:text-white sm:text-base">
-                        Email
+                        {tr("Email")}{" "}
                       </h3>
                       <p className="mt-0.5 truncate text-xs font-medium text-slate-500 dark:text-neutral-400">
                         {email}
@@ -255,7 +281,7 @@ export const Profile: React.FC = () => {
                         disabled={mustResetPassword}
                         className={`${settingsButtonClass} ml-auto`}
                       >
-                        Change
+                        {tr("Change")}{" "}
                       </button>
                     )}
                   </div>
@@ -267,7 +293,7 @@ export const Profile: React.FC = () => {
                           htmlFor="email"
                           className="mb-1 block text-xs font-semibold text-slate-500 dark:text-neutral-400"
                         >
-                          New email
+                          {tr("New email")}{" "}
                         </label>
                         <input
                           id="email"
@@ -282,7 +308,7 @@ export const Profile: React.FC = () => {
                           htmlFor="emailCurrentPassword"
                           className="mb-1 block text-xs font-semibold text-slate-500 dark:text-neutral-400"
                         >
-                          Current password
+                          {tr("Current password")}{" "}
                         </label>
                         <input
                           id="emailCurrentPassword"
@@ -292,7 +318,7 @@ export const Profile: React.FC = () => {
                             setEmailCurrentPassword(e.target.value)
                           }
                           className={`${settingsSelectClass} w-full`}
-                          placeholder="Enter current password"
+                          placeholder={tr("Enter current password")}
                         />
                       </div>
                       <div className="flex gap-2">
@@ -306,7 +332,7 @@ export const Profile: React.FC = () => {
                           }
                           className={settingsPrimaryButtonClass}
                         >
-                          {emailLoading ? "Saving…" : "Save email"}
+                          {emailLoading ? tr("Saving…") : tr("Save email")}
                         </button>
                         <button
                           onClick={() => {
@@ -318,7 +344,7 @@ export const Profile: React.FC = () => {
                           disabled={emailLoading}
                           className={settingsButtonClass}
                         >
-                          Cancel
+                          {tr("Cancel")}{" "}
                         </button>
                       </div>
                     </div>

@@ -1,3 +1,4 @@
+import { useEventTranslation } from "../../context/useTranslation";
 import { useCallback, useEffect } from "react";
 import type { FormEvent, MutableRefObject } from "react";
 import { useNavigate } from "react-router-dom";
@@ -90,6 +91,8 @@ export const useEditorCommands = ({
   setNewName,
   user,
 }: UseEditorCommandsParams) => {
+  const tr = useEventTranslation();
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -116,7 +119,7 @@ export const useEditorCommands = ({
             suppressErrors: false,
           });
           refs.savePreview.current(drawingId, safeElements, appState, files);
-          toast.success("Saved changes to server");
+          toast.success(tr("Saved changes to server"));
         } catch (err) {
           console.error("Failed to save on Ctrl+S", err);
           // enqueueSceneSave surfaces its own conflict/error toast; avoid a
@@ -126,7 +129,7 @@ export const useEditorCommands = ({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [canEdit, drawingId, enqueueSceneSave, refs, resolveSafeSnapshot]);
+  }, [tr, canEdit, drawingId, enqueueSceneSave, refs, resolveSafeSnapshot]);
 
   useEffect(() => {
     // Flush the latest scene when the tab is being hidden/closed. Debounced
@@ -181,10 +184,11 @@ export const useEditorCommands = ({
       } catch (err) {
         console.error("Failed to rename", err);
         setDrawingName(previousName);
-        toast.error("Failed to rename drawing");
+        toast.error(tr("Failed to rename drawing"));
       }
     },
     [
+      tr,
       canEdit,
       drawingId,
       drawingName,
@@ -231,7 +235,9 @@ export const useEditorCommands = ({
           !hasRenderableElements(safeElements)
         ) {
           toast.warning(
-            "Blank scene detected on load. Skipping save to protect existing data.",
+            tr(
+              "Blank scene detected on load. Skipping save to protect existing data.",
+            ),
           );
           shouldNavigate = true;
         } else {
@@ -246,12 +252,13 @@ export const useEditorCommands = ({
       }
     } catch (err) {
       console.error("Failed to save on back navigation", err);
-      toast.error("Failed to save changes. Please retry before leaving.");
+      toast.error(tr("Failed to save changes. Please retry before leaving."));
     } finally {
       setIsSavingOnLeave(false);
     }
     if (shouldNavigate) navigate("/");
   }, [
+    tr,
     canEdit,
     drawingId,
     enqueueSceneSave,
@@ -270,12 +277,12 @@ export const useEditorCommands = ({
     const files = refs.excalidrawAPI.current.getFiles() || {};
     try {
       await exportFromEditor(drawingId, drawingName, elements, appState, files);
-      toast.success("Drawing exported");
+      toast.success(tr("Drawing exported"));
     } catch (error) {
       console.error("Failed to export drawing", error);
-      toast.error("Failed to bundle drawing images. Please try again.");
+      toast.error(tr("Failed to bundle drawing images. Please try again."));
     }
-  }, [drawingId, drawingName, refs]);
+  }, [tr, drawingId, drawingName, refs]);
 
   const handleToggleAutoHide = useCallback(() => {
     setAutoHideEnabled(!autoHideEnabled);

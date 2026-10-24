@@ -1,3 +1,4 @@
+import { englishTranslation, type Translator } from "../locales";
 export type PasswordPolicy = {
   minLength: number;
   maxLength: number;
@@ -57,21 +58,31 @@ const buildPatternHtml = (policy: PasswordPolicyResponse): string => {
   return `${parts.join("")}.{${policy.minLength},${policy.maxLength}}`;
 };
 
-const buildPolicyMessage = (policy: PasswordPolicyResponse): string => {
-  const requirements = [`at least ${policy.minLength} characters`];
-  if (policy.requireUppercase) requirements.push("one uppercase letter");
-  if (policy.requireLowercase) requirements.push("one lowercase letter");
-  if (policy.requireNumber) requirements.push("one number");
-  if (policy.requireSymbol) requirements.push("one symbol");
-  return `Password must be ${requirements.join(", ")}`;
+const buildPolicyMessage = (
+  policy: PasswordPolicyResponse,
+  tr: Translator = englishTranslation,
+): string => {
+  const requirements = [
+    tr("at least {0} characters", { "0": policy.minLength }),
+  ];
+  if (policy.requireUppercase) requirements.push(tr("one uppercase letter"));
+  if (policy.requireLowercase) requirements.push(tr("one lowercase letter"));
+  if (policy.requireNumber) requirements.push(tr("one number"));
+  if (policy.requireSymbol) requirements.push(tr("one symbol"));
+  return tr("Password must be {0}", { "0": requirements.join(", ") });
 };
 
-const buildRequirementsText = (policy: PasswordPolicyResponse): string => {
-  const requirements = [`${policy.minLength}-${policy.maxLength} characters`];
-  if (policy.requireUppercase) requirements.push("1 uppercase letter");
-  if (policy.requireLowercase) requirements.push("1 lowercase letter");
-  if (policy.requireNumber) requirements.push("1 number");
-  if (policy.requireSymbol) requirements.push("1 symbol");
+const buildRequirementsText = (
+  policy: PasswordPolicyResponse,
+  tr: Translator = englishTranslation,
+): string => {
+  const requirements = [
+    tr("{0}-{1} characters", { "0": policy.minLength, "1": policy.maxLength }),
+  ];
+  if (policy.requireUppercase) requirements.push(tr("1 uppercase letter"));
+  if (policy.requireLowercase) requirements.push(tr("1 lowercase letter"));
+  if (policy.requireNumber) requirements.push(tr("1 number"));
+  if (policy.requireSymbol) requirements.push(tr("1 symbol"));
   return `${requirements.join(", ")}.`;
 };
 
@@ -120,9 +131,12 @@ export const cachePasswordPolicy = (
   }
 };
 
-export const getPasswordPolicy = (opts?: {
-  strong?: boolean;
-}): PasswordPolicy => {
+export const getPasswordPolicy = (
+  opts?: {
+    strong?: boolean;
+  },
+  tr: Translator = englishTranslation,
+): PasswordPolicy => {
   const strong = typeof opts?.strong === "boolean" ? opts.strong : true;
   const base = strong
     ? (readCachedPolicy() ?? DEFAULT_STRONG_POLICY)
@@ -139,20 +153,21 @@ export const getPasswordPolicy = (opts?: {
     requiresComplexity,
     pattern: new RegExp(`^${patternHtml}$`),
     patternHtml,
-    requirementsText: buildRequirementsText(base),
-    validationMessage: buildPolicyMessage(base),
+    requirementsText: buildRequirementsText(base, tr),
+    validationMessage: buildPolicyMessage(base, tr),
   };
 };
 
 export const getPasswordRequirements = (
   password: string,
   policy: PasswordPolicy,
+  tr: Translator = englishTranslation,
 ): PasswordRequirement[] => {
   const value = typeof password === "string" ? password : "";
   const requirements: PasswordRequirement[] = [
     {
       id: "minLength",
-      label: `At least ${policy.minLength} characters`,
+      label: tr("At least {0} characters", { "0": policy.minLength }),
       ok: value.length >= policy.minLength,
     },
   ];
@@ -160,28 +175,28 @@ export const getPasswordRequirements = (
   if (policy.requireUppercase) {
     requirements.push({
       id: "uppercase",
-      label: "One uppercase letter (A-Z)",
+      label: tr("One uppercase letter (A-Z)"),
       ok: /[A-Z]/.test(value),
     });
   }
   if (policy.requireLowercase) {
     requirements.push({
       id: "lowercase",
-      label: "One lowercase letter (a-z)",
+      label: tr("One lowercase letter (a-z)"),
       ok: /[a-z]/.test(value),
     });
   }
   if (policy.requireNumber) {
     requirements.push({
       id: "number",
-      label: "One number (0-9)",
+      label: tr("One number (0-9)"),
       ok: /\d/.test(value),
     });
   }
   if (policy.requireSymbol) {
     requirements.push({
       id: "symbol",
-      label: "One symbol",
+      label: tr("One symbol"),
       ok: /[^A-Za-z0-9]/.test(value),
     });
   }
@@ -192,11 +207,14 @@ export const getPasswordRequirements = (
 export const validatePassword = (
   password: string,
   policy: PasswordPolicy,
+  tr: Translator = englishTranslation,
 ): string | null => {
   if (typeof password !== "string") return policy.validationMessage;
   if (password.length < policy.minLength) return policy.validationMessage;
   if (password.length > policy.maxLength)
-    return `Password must be at most ${policy.maxLength} characters long`;
+    return tr("Password must be at most {0} characters long", {
+      "0": policy.maxLength,
+    });
   if (policy.requireUppercase && !/[A-Z]/.test(password))
     return policy.validationMessage;
   if (policy.requireLowercase && !/[a-z]/.test(password))

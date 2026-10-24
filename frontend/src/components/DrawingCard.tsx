@@ -1,3 +1,5 @@
+import { ru, zhCN, enUS } from "date-fns/locale";
+import { useAppLocale, useTranslation } from "../context/useTranslation";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { PenTool, Check, Clock } from "lucide-react";
 import type { DrawingSummary, Collection } from "../types";
@@ -47,6 +49,9 @@ export const DrawingCard: React.FC<DrawingCardProps> = ({
   onMouseDown,
   onPreviewGenerated,
 }) => {
+  const tr = useTranslation();
+  const locale = useAppLocale();
+
   const [isRenaming, setIsRenaming] = useState(false);
   const [showMoveSubmenu, setShowMoveSubmenu] = useState(false);
   const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
@@ -115,12 +120,12 @@ export const DrawingCard: React.FC<DrawingCardProps> = ({
       await exportDrawingToFile(await buildExportDrawing());
     } catch (error) {
       console.error("Failed to export drawing", error);
-      setExportError("Failed to export drawing. Please try again.");
+      setExportError(tr("Failed to export drawing. Please try again."));
       setTimeout(() => setExportError(null), 3000);
     } finally {
       setIsExporting(false);
     }
-  }, [buildExportDrawing]);
+  }, [tr, buildExportDrawing]);
 
   useEffect(() => {
     const handleClick = () => setContextMenu(null);
@@ -184,7 +189,7 @@ export const DrawingCard: React.FC<DrawingCardProps> = ({
             }}
             data-testid={`select-drawing-${drawing.id}`}
             aria-pressed={isSelected}
-            aria-label={`${isSelected ? "Deselect" : "Select"} ${drawing.name}`}
+            aria-label={`${isSelected ? tr("Deselect") : tr("Select")} ${drawing.name}`}
             className={clsx(
               "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 shadow-sm",
               isSelected
@@ -270,7 +275,11 @@ export const DrawingCard: React.FC<DrawingCardProps> = ({
             <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2.5">
               <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 dark:text-neutral-500 flex items-center gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap">
                 <Clock size={10} className="sm:w-[11px] sm:h-[11px]" />
-                {formatDistanceToNow(drawing.updatedAt)} ago
+                {formatDistanceToNow(drawing.updatedAt, {
+                  addSuffix: true,
+                  locale:
+                    locale === "ru" ? ru : locale === "zh-CN" ? zhCN : enUS,
+                })}
               </p>
 
               <CollectionPicker

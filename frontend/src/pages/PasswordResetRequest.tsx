@@ -1,9 +1,12 @@
+import { useTranslation } from "../context/useTranslation";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "../components/Logo";
 import { authPasswordResetCapability, authPasswordResetRequest } from "../api";
 
 export const PasswordResetRequest: React.FC = () => {
+  const tr = useTranslation();
+
   const [enabled, setEnabled] = useState<boolean | null>(null);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -32,7 +35,7 @@ export const PasswordResetRequest: React.FC = () => {
       await authPasswordResetRequest(email);
       setSubmitted(true);
     } catch {
-      setError("Could not request a reset right now. Try again later.");
+      setError(tr("Could not request a reset right now. Try again later."));
     } finally {
       setLoading(false);
     }
@@ -44,14 +47,14 @@ export const PasswordResetRequest: React.FC = () => {
         <div className="text-center">
           <Logo className="mx-auto h-12 w-auto" />
           <h2 className="auth-heading">
-            {enabled ? "Reset your password" : "Password help"}
+            {enabled ? tr("Reset your password") : tr("Password help")}
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             {enabled
-              ? "Enter your email address and we’ll send you a reset link."
+              ? tr("Enter your email address and we’ll send you a reset link.")
               : enabled === null
-                ? "Checking password reset availability…"
-                : "This server does not send password reset emails."}
+                ? tr("Checking password reset availability…")
+                : tr("This server does not send password reset emails.")}
           </p>
         </div>
 
@@ -60,13 +63,13 @@ export const PasswordResetRequest: React.FC = () => {
             <form className="ui-card p-5 space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label className="sr-only" htmlFor="reset-email">
-                  Email address
+                  {tr("Email address")}{" "}
                 </label>
                 <input
                   id="reset-email"
                   className="ui-input"
                   type="email"
-                  placeholder="Email address"
+                  placeholder={tr("Email address")}
                   autoComplete="email"
                   required
                   value={email}
@@ -75,7 +78,7 @@ export const PasswordResetRequest: React.FC = () => {
               </div>
               {error ? (
                 <p className="text-sm text-red-600 dark:text-red-400">
-                  {error}
+                  {tr(error)}
                 </p>
               ) : null}
               <button
@@ -83,21 +86,22 @@ export const PasswordResetRequest: React.FC = () => {
                 type="submit"
                 disabled={loading}
               >
-                {loading ? "Sending…" : "Send reset link"}
+                {loading ? tr("Sending…") : tr("Send reset link")}
               </button>
             </form>
           ) : enabled && submitted ? (
             <div className="ui-card p-5 text-sm text-gray-700 dark:text-gray-200">
-              If an account with that email exists, a password reset link has
-              been sent. The link is valid for 60 minutes and can be used once.
+              {tr(
+                "If an account with that email exists, a password reset link has been sent. The link is valid for 60 minutes and can be used once.",
+              )}{" "}
             </div>
           ) : enabled === false ? (
             <div className="ui-card p-5 text-left space-y-3">
               <div className="text-sm text-gray-700 dark:text-gray-200">
-                Ask your administrator for a temporary password.
+                {tr("Ask your administrator for a temporary password.")}{" "}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-300">
-                If you are an admin and you’re locked out, run:
+                {tr("If you are an admin and you’re locked out, run:")}{" "}
               </div>
               <pre className="text-xs bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md p-3 overflow-x-auto">
                 cd backend && node scripts/admin-recover.cjs --identifier
@@ -108,7 +112,7 @@ export const PasswordResetRequest: React.FC = () => {
 
           <div className="text-center">
             <Link to="/login" className="ui-link">
-              Back to login
+              {tr("Back to login")}{" "}
             </Link>
           </div>
         </div>

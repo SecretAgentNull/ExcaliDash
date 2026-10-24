@@ -1,3 +1,4 @@
+import { useTranslation } from "../../context/useTranslation";
 import React from "react";
 import { Plus } from "lucide-react";
 import clsx from "clsx";
@@ -25,6 +26,8 @@ export const NewDrawingControl: React.FC<NewDrawingControlProps> = ({
   onCreate,
   canCreate,
 }) => {
+  const tr = useTranslation();
+
   return (
     <button
       onClick={() => {
@@ -38,7 +41,7 @@ export const NewDrawingControl: React.FC<NewDrawingControlProps> = ({
         disabled ? DISABLED_BUTTON : ENABLED_BUTTON,
       )}
     >
-      <Plus size={18} strokeWidth={2.5} /> New Drawing
+      <Plus size={18} strokeWidth={2.5} /> {tr("New Drawing")}{" "}
     </button>
   );
 };

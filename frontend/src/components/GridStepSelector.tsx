@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import React from "react";
 import { useI18n } from "@excalidraw/excalidraw";
 
@@ -27,8 +28,10 @@ export const GridStepSelector: React.FC<GridStepSelectorProps> = ({
   gridStep,
   onChange,
 }) => {
+  const tr = useTranslation();
+
   const { t } = useI18n();
-  const label = t("labels.gridStep", null, "Grid step");
+  const label = t("labels.gridStep", null, tr("Grid step"));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const parsed = Number.parseInt(e.target.value, 10);

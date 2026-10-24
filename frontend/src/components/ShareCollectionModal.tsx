@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import React, { useCallback, useEffect, useState } from "react";
 import { X, Plus, AlertTriangle, RefreshCw, Search, Users } from "lucide-react";
 import * as api from "../api";
@@ -23,6 +24,8 @@ export const ShareCollectionModal: React.FC<Props> = ({
   isOpen,
   onClose,
 }) => {
+  const tr = useTranslation();
+
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +42,7 @@ export const ShareCollectionModal: React.FC<Props> = ({
       const data = await api.getCollectionShares(collectionId);
       setShares(data.shares);
     } catch (err: unknown) {
-      let msg = "Failed to load sharing settings";
+      let msg = tr("Failed to load sharing settings");
       if (api.isAxiosError(err)) {
         const s = err.response?.data?.message;
         if (typeof s === "string") msg = s;
@@ -48,7 +51,7 @@ export const ShareCollectionModal: React.FC<Props> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [collectionId]);
+  }, [tr, collectionId]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -91,7 +94,7 @@ export const ShareCollectionModal: React.FC<Props> = ({
       setQuery("");
       setResults([]);
     } catch (err: unknown) {
-      let msg = "Failed to share with user";
+      let msg = tr("Failed to share with user");
       if (api.isAxiosError(err)) {
         const s = err.response?.data?.message ?? err.response?.data?.error;
         if (typeof s === "string") msg = s;
@@ -117,7 +120,7 @@ export const ShareCollectionModal: React.FC<Props> = ({
       );
       await refresh();
     } catch {
-      setError("Failed to update role");
+      setError(tr("Failed to update role"));
     } finally {
       setIsLoading(false);
     }
@@ -130,7 +133,7 @@ export const ShareCollectionModal: React.FC<Props> = ({
       await api.removeCollectionShare(collectionId, userId);
       await refresh();
     } catch {
-      setError("Failed to remove user");
+      setError(tr("Failed to remove user"));
     } finally {
       setIsLoading(false);
     }
@@ -152,7 +155,7 @@ export const ShareCollectionModal: React.FC<Props> = ({
             className="text-base font-bold text-slate-800 dark:text-neutral-100 truncate pr-4"
             title={collectionName}
           >
-            Share "{collectionName}"
+            {tr('Share "{0}"', { 0: collectionName })}
           </h2>
           <button
             onClick={onClose}
@@ -167,7 +170,7 @@ export const ShareCollectionModal: React.FC<Props> = ({
           {error && (
             <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-3">
               <AlertTriangle size={16} strokeWidth={2} />
-              {error}
+              {tr(error)}
             </div>
           )}
 
@@ -181,7 +184,7 @@ export const ShareCollectionModal: React.FC<Props> = ({
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Add people by name or email"
+                  placeholder={tr("Add people by name or email")}
                   className="w-full pl-10 pr-4 py-2 rounded-xl border-2 border-slate-800 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800 text-slate-900 dark:text-neutral-100 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-500 transition-all text-sm font-semibold placeholder:text-slate-400 shadow-[1.5px_1.5px_0px_0px_rgba(30,41,59,0.9)] dark:shadow-[1.5px_1.5px_0px_0px_rgba(255,255,255,0.18)]"
                 />
               </div>
@@ -225,18 +228,18 @@ export const ShareCollectionModal: React.FC<Props> = ({
           {/* People with access */}
           <section className="space-y-2">
             <h3 className="text-xs font-bold text-neutral-500 dark:text-neutral-400 px-1">
-              People with access
+              {tr("People with access")}{" "}
             </h3>
 
             <div className="space-y-0.5">
               {/* Owner row */}
               <div className="flex items-center gap-3 px-1 py-1.5 min-h-[48px]">
-                <UserAvatar name={user?.name || "User"} size="sm" />
+                <UserAvatar name={user?.name || tr("User")} size="sm" />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-bold text-slate-900 dark:text-neutral-100 leading-tight">
                     {user?.name}{" "}
                     <span className="text-slate-400 dark:text-neutral-500 font-semibold ml-1">
-                      (you)
+                      {tr("(you)")}
                     </span>
                   </div>
                   <div className="text-[10px] font-semibold text-slate-500 dark:text-neutral-400 mt-0.5">
@@ -244,7 +247,7 @@ export const ShareCollectionModal: React.FC<Props> = ({
                   </div>
                 </div>
                 <div className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 pr-4 shrink-0">
-                  Owner
+                  {tr("Owner")}{" "}
                 </div>
               </div>
 
@@ -252,7 +255,7 @@ export const ShareCollectionModal: React.FC<Props> = ({
                 <div className="flex flex-col items-center gap-2 py-6 text-slate-400 dark:text-neutral-500">
                   <Users size={28} strokeWidth={1.5} />
                   <p className="text-xs font-bold">
-                    No one else has access yet
+                    {tr("No one else has access yet")}{" "}
                   </p>
                 </div>
               )}
@@ -277,7 +280,7 @@ export const ShareCollectionModal: React.FC<Props> = ({
                       onChange={(val) => handleRoleChange(s.granteeUserId, val)}
                       extraOptions={[
                         {
-                          label: "Remove access",
+                          label: tr("Remove access"),
                           value: "remove",
                           danger: true,
                         },
@@ -293,7 +296,7 @@ export const ShareCollectionModal: React.FC<Props> = ({
         {/* Footer */}
         <div className="px-6 py-4 flex items-center justify-end border-t-2 border-slate-800 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800/50 rounded-b-[14px]">
           <button onClick={onClose} className="ui-button-primary px-6 text-xs">
-            Done
+            {tr("Done")}{" "}
           </button>
         </div>
 

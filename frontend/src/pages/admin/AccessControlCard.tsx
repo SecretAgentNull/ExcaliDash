@@ -1,3 +1,4 @@
+import { useTranslation } from "../../context/useTranslation";
 import React from "react";
 import { UserPlus } from "lucide-react";
 import { PlayfulSwitch } from "../../components/PlayfulSwitch";
@@ -38,50 +39,61 @@ export const AccessControlCard: React.FC<AccessControlCardProps> = ({
   loading,
   onToggleRegistration,
   onToggleOidcJitProvisioning,
-}) => (
-  <section className="mb-6">
-    <SettingsSectionHeader
-      icon={<UserPlus size={20} />}
-      tileClassName="border-black bg-emerald-400 text-black dark:border-neutral-700 dark:bg-emerald-400 dark:text-black"
-      title="Access control"
-      subtitle="Who can create an account"
-    />
+}) => {
+  const tr = useTranslation();
+  return (
+    <section className="mb-6">
+      <SettingsSectionHeader
+        icon={<UserPlus size={20} />}
+        tileClassName="border-black bg-emerald-400 text-black dark:border-neutral-700 dark:bg-emerald-400 dark:text-black"
+        title={tr("Access control")}
+        subtitle={tr("Who can create an account")}
+      />
 
-    <SettingsCard>
-      <SettingsRow
-        title="Local sign-up"
-        description={getRegistrationDescription(
-          registrationEnabled,
-          localRegistrationAllowed,
-        )}
-      >
-        <PlayfulSwitch
-          checked={Boolean(registrationEnabled)}
-          disabled={
-            loading || registrationEnabled === null || !localRegistrationAllowed
-          }
-          onChange={() => void onToggleRegistration()}
-          ariaLabel="Toggle local sign-up"
-        />
-      </SettingsRow>
-
-      {oidcEnabled ? (
+      <SettingsCard>
         <SettingsRow
-          title={`${oidcProviderName || "OIDC"} auto-provisioning`}
-          description={
-            oidcJitProvisioningEnabled
-              ? "OIDC users get an account on first sign-in"
-              : "Only pre-created users can sign in via OIDC"
-          }
+          title={tr("Local sign-up")}
+          description={tr(
+            getRegistrationDescription(
+              registrationEnabled,
+              localRegistrationAllowed,
+            ),
+          )}
         >
           <PlayfulSwitch
-            checked={Boolean(oidcJitProvisioningEnabled)}
-            disabled={loading || oidcJitProvisioningEnabled === null}
-            onChange={() => void onToggleOidcJitProvisioning()}
-            ariaLabel={`Toggle ${oidcProviderName || "OIDC"} auto-provisioning`}
+            checked={Boolean(registrationEnabled)}
+            disabled={
+              loading ||
+              registrationEnabled === null ||
+              !localRegistrationAllowed
+            }
+            onChange={() => void onToggleRegistration()}
+            ariaLabel={tr("Toggle local sign-up")}
           />
         </SettingsRow>
-      ) : null}
-    </SettingsCard>
-  </section>
-);
+
+        {oidcEnabled ? (
+          <SettingsRow
+            title={tr("{0} auto-provisioning", {
+              0: oidcProviderName || "OIDC",
+            })}
+            description={
+              oidcJitProvisioningEnabled
+                ? tr("OIDC users get an account on first sign-in")
+                : tr("Only pre-created users can sign in via OIDC")
+            }
+          >
+            <PlayfulSwitch
+              checked={Boolean(oidcJitProvisioningEnabled)}
+              disabled={loading || oidcJitProvisioningEnabled === null}
+              onChange={() => void onToggleOidcJitProvisioning()}
+              ariaLabel={tr("Toggle {0} auto-provisioning", {
+                0: oidcProviderName || "OIDC",
+              })}
+            />
+          </SettingsRow>
+        ) : null}
+      </SettingsCard>
+    </section>
+  );
+};

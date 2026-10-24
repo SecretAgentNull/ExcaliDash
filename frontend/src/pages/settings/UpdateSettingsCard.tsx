@@ -1,3 +1,4 @@
+import { useTranslation } from "../../context/useTranslation";
 import type { ReactNode } from "react";
 import { Check, FlaskConical, RefreshCw, ShieldCheck } from "lucide-react";
 import type * as api from "../../api";
@@ -21,27 +22,29 @@ export const UpdateSettingsCard = ({
   onChannelChange,
   onCheckForUpdates,
 }: UpdateSettingsCardProps) => {
-  let status: ReactNode = "Status unknown";
+  const tr = useTranslation();
+
+  let status: ReactNode = tr("Status unknown");
   if (updateInfo?.outboundEnabled === false) {
-    status = "Update checks disabled";
+    status = tr("Update checks disabled");
   } else if (updateLoading) {
-    status = "Checking…";
+    status = tr("Checking…");
   } else if (updateInfo?.isUpdateAvailable) {
     status = (
       <span className="font-bold text-emerald-600 dark:text-emerald-400">
-        v{updateInfo.latestVersion} available
+        v{updateInfo.latestVersion} {tr("available")}{" "}
       </span>
     );
   } else if (updateInfo?.latestVersion) {
     status = (
       <span className="inline-flex items-center gap-1">
         <Check size={12} strokeWidth={3} className="text-emerald-500" />
-        Up to date
+        {tr("Up to date")}{" "}
       </span>
     );
   } else if (updateError) {
     status = (
-      <span className="text-red-600 dark:text-red-400">{updateError}</span>
+      <span className="text-red-600 dark:text-red-400">{tr(updateError)}</span>
     );
   }
 
@@ -51,7 +54,7 @@ export const UpdateSettingsCard = ({
         <RefreshCw size={20} className={updateLoading ? "animate-spin" : ""} />
       }
       tileClassName="border-black bg-emerald-400 text-black dark:border-neutral-700 dark:bg-emerald-400 dark:text-black"
-      title="Updates"
+      title={tr("Updates")}
       description={
         <span className="inline-flex flex-wrap items-center gap-2">
           {status}
@@ -61,27 +64,31 @@ export const UpdateSettingsCard = ({
             rel="noreferrer"
             className="inline-flex items-center font-bold text-indigo-600 hover:underline dark:text-indigo-400"
           >
-            Releases
+            {tr("Releases")}{" "}
           </a>
           {updateInfo?.error && !updateLoading ? (
             <span className="basis-full text-red-500 dark:text-red-400">
-              Error: {updateInfo.error}
+              {tr("Error:")} {updateInfo.error}
             </span>
           ) : null}
         </span>
       }
     >
       <PlayfulSelect
-        ariaLabel="Update channel"
+        ariaLabel={tr("Update channel")}
         value={updateChannel}
         onChange={(value) =>
           onChannelChange(value === "prerelease" ? "prerelease" : "stable")
         }
         options={[
-          { value: "stable", label: "Stable", icon: <ShieldCheck size={14} /> },
+          {
+            value: "stable",
+            label: tr("Stable"),
+            icon: <ShieldCheck size={14} />,
+          },
           {
             value: "prerelease",
-            label: "Prerelease",
+            label: tr("Prerelease"),
             icon: <FlaskConical size={14} />,
           },
         ]}
@@ -92,7 +99,7 @@ export const UpdateSettingsCard = ({
         disabled={updateLoading}
         className={settingsButtonClass}
       >
-        Check
+        {tr("Check")}{" "}
       </button>
     </SettingsRow>
   );

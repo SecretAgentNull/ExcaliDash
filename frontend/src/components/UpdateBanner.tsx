@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import React, { useEffect, useState } from "react";
 import { BellOff, ExternalLink, RefreshCw, XCircle } from "lucide-react";
 import * as api from "../api";
@@ -96,6 +97,8 @@ const writeCachedInfo = (channel: api.UpdateChannel, info: api.UpdateInfo) => {
 };
 
 export const UpdateBanner: React.FC = () => {
+  const tr = useTranslation();
+
   const [channel, setChannel] = useState<api.UpdateChannel>(() =>
     readChannel(),
   );
@@ -154,21 +157,21 @@ export const UpdateBanner: React.FC = () => {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 flex-shrink-0">
-            <span className="text-xs font-bold">Update available</span>
+            <span className="text-xs font-bold">{tr("Update available")}</span>
           </div>
           <div className="min-w-0 flex items-center gap-2">
             <span className="text-sm font-bold text-emerald-950 dark:text-emerald-50 truncate">
               v{info?.latestVersion}
             </span>
             <span className="hidden sm:inline text-xs font-medium text-emerald-900/60 dark:text-emerald-200/40">
-              ({channel})
+              ({tr(channel === "stable" ? "Stable" : "Prerelease")})
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
           <PlayfulSelect
-            ariaLabel="Update channel"
+            ariaLabel={tr("Update channel")}
             value={channel}
             onChange={(value) => {
               const next = (
@@ -179,8 +182,8 @@ export const UpdateBanner: React.FC = () => {
             }}
             size="sm"
             options={[
-              { value: "stable", label: "stable" },
-              { value: "prerelease", label: "prerelease" },
+              { value: "stable", label: tr("Stable") },
+              { value: "prerelease", label: tr("Prerelease") },
             ]}
           />
 
@@ -192,7 +195,7 @@ export const UpdateBanner: React.FC = () => {
               className="ui-button-primary h-8 px-3 text-xs"
             >
               <ExternalLink size={14} strokeWidth={2.5} />
-              <span className="hidden sm:inline">Release</span>
+              <span className="hidden sm:inline">{tr("Release")}</span>
             </a>
           ) : null}
 
@@ -205,10 +208,10 @@ export const UpdateBanner: React.FC = () => {
               setClosedVersion(latest);
             }}
             className="ui-button-secondary h-8 px-3 text-[11px]"
-            title="Close (will reappear later)"
+            title={tr("Close (will reappear later)")}
           >
             <XCircle size={14} strokeWidth={2.5} />
-            <span className="hidden sm:inline">Close</span>
+            <span className="hidden sm:inline">{tr("Close")}</span>
           </button>
 
           <button
@@ -220,10 +223,10 @@ export const UpdateBanner: React.FC = () => {
               setIgnoredVersion(latest);
             }}
             className="ui-button-secondary h-8 px-3 text-[11px]"
-            title="Ignore this version"
+            title={tr("Ignore this version")}
           >
             <BellOff size={14} strokeWidth={2.5} />
-            <span className="hidden sm:inline">Ignore</span>
+            <span className="hidden sm:inline">{tr("Ignore")}</span>
           </button>
 
           <button
@@ -231,8 +234,8 @@ export const UpdateBanner: React.FC = () => {
             onClick={() => void load(true)}
             disabled={loading}
             className="ui-icon-button h-8 w-8"
-            title="Re-check now"
-            aria-label="Re-check now"
+            title={tr("Re-check now")}
+            aria-label={tr("Re-check now")}
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
           </button>

@@ -1,3 +1,4 @@
+import { useTranslation } from "../../context/useTranslation";
 import {
   Archive,
   PanelLeft,
@@ -63,6 +64,8 @@ export const SettingsMainGrid = ({
   onUpdateChannelChange,
   onCheckForUpdates,
 }: SettingsMainGridProps) => {
+  const tr = useTranslation();
+
   const { language, setLanguage, t } = useLocale();
 
   return (
@@ -84,7 +87,9 @@ export const SettingsMainGrid = ({
           {language !== "en" &&
             language !== "ru-RU" &&
             language !== "zh-CN" && (
-              <option value={language}>{language} (editor language)</option>
+              <option value={language}>
+                {language} {tr("(editor language)")}
+              </option>
             )}
         </select>
       </SettingsRow>
@@ -92,57 +97,59 @@ export const SettingsMainGrid = ({
       <SettingsRow
         icon={theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
         tileClassName="border-black bg-amber-400 text-black dark:border-neutral-700 dark:bg-amber-400 dark:text-black"
-        title="Appearance"
+        title={tr("Appearance")}
       >
         <PlayfulSwitch
           checked={theme === "dark"}
           onChange={() => toggleTheme()}
-          ariaLabel="Toggle dark mode"
+          ariaLabel={tr("Toggle dark mode")}
         />
       </SettingsRow>
 
       <SettingsRow
         icon={editorAutoHide ? <EyeOff size={20} /> : <Eye size={20} />}
         tileClassName="border-black bg-cyan-400 text-black dark:border-neutral-700 dark:bg-cyan-400 dark:text-black"
-        title="Auto-hide editor header"
+        title={tr("Auto-hide editor header")}
         description={
-          editorAutoHide ? "Hide by default" : "Keep visible by default"
+          editorAutoHide ? tr("Hide by default") : tr("Keep visible by default")
         }
       >
         <PlayfulSwitch
           checked={editorAutoHide}
           onChange={onEditorAutoHideChange}
-          ariaLabel="Toggle editor header auto-hide default"
+          ariaLabel={tr("Toggle editor header auto-hide default")}
         />
       </SettingsRow>
 
       <SettingsRow
         icon={<PanelLeft size={20} />}
         tileClassName="border-black bg-violet-400 text-black dark:border-neutral-700 dark:bg-violet-400 dark:text-black"
-        title="Compact sidebar"
-        description="Keep account actions in the avatar menu"
+        title={tr("Compact sidebar")}
+        description={tr("Keep account actions in the avatar menu")}
       >
         <PlayfulSwitch
           checked={compactSidebar}
           onChange={onCompactSidebarChange}
-          ariaLabel="Toggle compact sidebar"
+          ariaLabel={tr("Toggle compact sidebar")}
         />
       </SettingsRow>
 
       <SettingsRow
         icon={imageCompression ? <Zap size={20} /> : <ZapOff size={20} />}
         tileClassName="border-black bg-blue-400 text-black dark:border-neutral-700 dark:bg-blue-400 dark:text-black"
-        title="Optimized images"
+        title={tr("Optimized images")}
         description={
           imageCompression
-            ? `Compress images over ${imageCompressionThresholdMb} MB`
-            : "Original quality"
+            ? tr("Compress images over {0} MB", {
+                0: imageCompressionThresholdMb,
+              })
+            : tr("Original quality")
         }
       >
         <div className="flex items-center gap-3">
           <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-neutral-300">
             <input
-              aria-label="Image compression threshold in MB"
+              aria-label={tr("Image compression threshold in MB")}
               type="number"
               min={MIN_IMAGE_COMPRESSION_THRESHOLD_MB}
               max={MAX_IMAGE_COMPRESSION_THRESHOLD_MB}
@@ -165,12 +172,12 @@ export const SettingsMainGrid = ({
               }}
               className="ui-input w-24 text-sm tabular-nums disabled:opacity-50"
             />
-            <span>MB</span>
+            <span>{tr("MB")}</span>
           </label>
           <PlayfulSwitch
             checked={imageCompression}
             onChange={() => toggleImageCompression()}
-            ariaLabel="Toggle image optimization"
+            ariaLabel={tr("Toggle image optimization")}
           />
         </div>
       </SettingsRow>
@@ -178,10 +185,10 @@ export const SettingsMainGrid = ({
       <SettingsRow
         icon={<Archive size={20} />}
         tileClassName="border-black bg-indigo-400 text-black dark:border-neutral-700 dark:bg-indigo-400 dark:text-black"
-        title="Export backup"
+        title={tr("Export backup")}
       >
         <button onClick={exportBackup} className={settingsPrimaryButtonClass}>
-          Export
+          {tr("Export")}{" "}
         </button>
       </SettingsRow>
 

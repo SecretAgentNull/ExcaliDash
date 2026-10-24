@@ -1,3 +1,4 @@
+import { useTranslation } from "../../context/useTranslation";
 import React, { useState } from "react";
 import clsx from "clsx";
 
@@ -34,6 +35,8 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({
   onEditBlur,
   onDrop,
 }) => {
+  const tr = useTranslation();
+
   const [isDragOver, setIsDragOver] = useState(false);
 
   return (
@@ -45,7 +48,7 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({
             type="text"
             value={editValue}
             onChange={(e) => onEditChange?.(e.target.value)}
-            aria-label="Collection name"
+            aria-label={tr("Collection name")}
             className="ui-input w-full font-medium"
             onBlur={onEditBlur}
           />

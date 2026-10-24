@@ -1,3 +1,4 @@
+import { useEventTranslation } from "../../context/useTranslation";
 import { useEffect } from "react";
 import type { RefObject } from "react";
 import { toast } from "sonner";
@@ -14,6 +15,8 @@ export const useLibraryImportFromUrl = ({
   isReady,
   user,
 }: UseLibraryImportFromUrlParams) => {
+  const tr = useEventTranslation();
+
   useEffect(() => {
     if (!isReady || !excalidrawAPIRef.current) return;
     const hash = window.location.hash;
@@ -27,10 +30,10 @@ export const useLibraryImportFromUrl = ({
         try {
           parsedUrl = new URL(libraryUrl, window.location.href);
         } catch {
-          throw new Error("Invalid library URL");
+          throw new Error(tr("Invalid library URL"));
         }
         if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
-          throw new Error("Library URL must use http(s)");
+          throw new Error(tr("Library URL must use http(s)"));
         }
         const isLocalhost =
           parsedUrl.hostname === "localhost" ||
@@ -39,10 +42,13 @@ export const useLibraryImportFromUrl = ({
         const isCrossOrigin = parsedUrl.origin !== window.location.origin;
         if (isCrossOrigin) {
           const ok = window.confirm(
-            `Import library from external site?\n\n${parsedUrl.origin}\n\nOnly continue if you trust this source.`,
+            tr(
+              "Import library from external site?\n\n{0}\n\nOnly continue if you trust this source.",
+              { 0: parsedUrl.origin },
+            ),
           );
           if (!ok) {
-            toast.info("Library import canceled", { id: "library-import" });
+            toast.info(tr("Library import canceled"), { id: "library-import" });
             window.history.replaceState(
               null,
               "",
@@ -56,18 +62,20 @@ export const useLibraryImportFromUrl = ({
           parsedUrl.protocol === "http:" &&
           !isLocalhost
         ) {
-          throw new Error("Insecure http:// library URL is not allowed");
+          throw new Error(tr("Insecure http:// library URL is not allowed"));
         }
-        toast.loading("Importing library...", { id: "library-import" });
+        toast.loading(tr("Importing library..."), { id: "library-import" });
         const response = await fetch(parsedUrl.toString(), {
           credentials: "omit",
         });
         if (!response.ok) {
-          throw new Error(`Failed to fetch library: ${response.statusText}`);
+          throw new Error(
+            tr("Failed to fetch library: {0}", { 0: response.statusText }),
+          );
         }
         const blob = await response.blob();
         if (blob.size > 10 * 1024 * 1024) {
-          throw new Error("Library file is too large");
+          throw new Error(tr("Library file is too large"));
         }
         await excalidrawAPIRef.current.updateLibrary({
           libraryItems: blob,
@@ -80,7 +88,7 @@ export const useLibraryImportFromUrl = ({
         if (user) {
           await api.updateLibrary([...updatedItems]);
         }
-        toast.success("Library imported successfully", {
+        toast.success(tr("Library imported successfully"), {
           id: "library-import",
         });
         window.history.replaceState(
@@ -90,9 +98,9 @@ export const useLibraryImportFromUrl = ({
         );
       } catch (err) {
         console.error("[Editor] Failed to import library:", err);
-        toast.error("Failed to import library", { id: "library-import" });
+        toast.error(tr("Failed to import library"), { id: "library-import" });
       }
     };
     importLibraryFromUrl();
-  }, [excalidrawAPIRef, isReady, user]);
+  }, [tr, excalidrawAPIRef, isReady, user]);
 };

@@ -1,3 +1,4 @@
+import { useEventTranslation } from "../../context/useTranslation";
 import { useCallback, useEffect } from "react";
 import type { MutableRefObject } from "react";
 import {
@@ -75,6 +76,8 @@ export const useEditorCanvasHandlers = ({
   resolveSafeSnapshot,
   broadcastChanges,
 }: UseEditorCanvasHandlersParams) => {
+  const tr = useEventTranslation();
+
   const {
     debouncedSave: debouncedSaveRef,
     excalidrawAPI: excalidrawAPIRef,
@@ -213,10 +216,10 @@ export const useEditorCanvasHandlers = ({
         });
       } catch (err) {
         console.error("[Editor] Failed to import dropped images", err);
-        toast.error("Failed to import dropped images");
+        toast.error(tr("Failed to import dropped images"));
       }
     },
-    [canEdit, excalidrawAPIRef],
+    [tr, canEdit, excalidrawAPIRef],
   );
 
   useEffect(() => {

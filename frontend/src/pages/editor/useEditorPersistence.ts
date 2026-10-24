@@ -1,3 +1,4 @@
+import { useEventTranslation } from "../../context/useTranslation";
 import {
   useCallback,
   useEffect,
@@ -80,6 +81,8 @@ export const useEditorPersistence = ({
   normalizeImageElementStatus,
   resolveSafeSnapshot,
 }: UseEditorPersistenceParams) => {
+  const tr = useEventTranslation();
+
   const historyRestorePendingRef = useRef(false);
   const drawingSessionRef = useRef({ drawingId: activeDrawingId });
   useLayoutEffect(() => {
@@ -282,11 +285,13 @@ export const useEditorPersistence = ({
       );
     } catch (err) {
       if (err instanceof DrawingSaveConflictError) {
-        toast.error("Drawing changed in another tab. Refresh to load latest.");
+        toast.error(
+          tr("Drawing changed in another tab. Refresh to load latest."),
+        );
         throw err;
       }
       console.error("Failed to save drawing", err);
-      toast.error("Failed to save changes");
+      toast.error(tr("Failed to save changes"));
       throw err;
     }
   };
@@ -494,7 +499,7 @@ export const useEditorPersistence = ({
       // in the broadcast throttle. A stale debounce must not replace this backup.
       debouncedSave.cancel();
       const editor = refs.excalidrawAPI.current;
-      if (!editor) throw new Error("Drawing is still loading");
+      if (!editor) throw new Error(tr("Drawing is still loading"));
       const finalLiveSave = enqueueSceneSave(
         drawingId,
         editor.getSceneElementsIncludingDeleted(),
@@ -514,7 +519,7 @@ export const useEditorPersistence = ({
         throw error;
       }
     },
-    [debouncedSave, debouncedSavePreview, enqueueSceneSave, refs],
+    [tr, debouncedSave, debouncedSavePreview, enqueueSceneSave, refs],
   );
 
   return {

@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { Layout } from "../components/Layout";
 import { Loader2 } from "lucide-react";
@@ -21,6 +22,8 @@ import { useDashboardSort } from "./dashboard/useDashboardSort";
 import { displayFontFamily } from "../utils/displayFont";
 const PAGE_SIZE = 24;
 export const Dashboard: React.FC = () => {
+  const tr = useTranslation();
+
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -146,13 +149,13 @@ export const Dashboard: React.FC = () => {
     refreshData,
   });
   const viewTitle = React.useMemo(() => {
-    if (selectedCollectionId === undefined) return "All Drawings";
-    if (selectedCollectionId === null) return "Unorganized";
-    if (selectedCollectionId === "shared") return "Shared with me";
-    if (selectedCollectionId === "trash") return "Trash";
+    if (selectedCollectionId === undefined) return tr("All Drawings");
+    if (selectedCollectionId === null) return tr("Unorganized");
+    if (selectedCollectionId === "shared") return tr("Shared with me");
+    if (selectedCollectionId === "trash") return tr("Trash");
     const collection = collections.find((c) => c.id === selectedCollectionId);
-    return collection ? collection.name : "Collection";
-  }, [selectedCollectionId, collections]);
+    return collection ? collection.name : tr("Collection");
+  }, [tr, selectedCollectionId, collections]);
   const visibleCollections = React.useMemo(
     () => collections.filter((c) => c.id !== "trash"),
     [collections],
@@ -276,16 +279,18 @@ export const Dashboard: React.FC = () => {
             <div className="flex items-center gap-2 text-indigo-600 font-bold animate-in fade-in slide-in-from-bottom-2">
               {" "}
               <Loader2 size={24} className="animate-spin" />{" "}
-              <span>Loading more...</span>{" "}
+              <span>{tr("Loading more...")}</span>{" "}
             </div>
           )}{" "}
         </div>{" "}
       </div>{" "}
       <ConfirmModal
         isOpen={!!actions.drawingToDelete}
-        title="Delete Drawing"
-        message="Are you sure you want to permanently delete this drawing? This action cannot be undone."
-        confirmText="Delete Permanently"
+        title={tr("Delete Drawing")}
+        message={tr(
+          "Are you sure you want to permanently delete this drawing? This action cannot be undone.",
+        )}
+        confirmText={tr("Delete Permanently")}
         onConfirm={() =>
           actions.drawingToDelete &&
           actions.executePermanentDelete(actions.drawingToDelete)
@@ -294,17 +299,20 @@ export const Dashboard: React.FC = () => {
       />{" "}
       <ConfirmModal
         isOpen={actions.showBulkDeleteConfirm}
-        title="Delete Selected Drawings"
-        message={`Are you sure you want to permanently delete ${selectedIds.size} drawings? This action cannot be undone.`}
-        confirmText={`Delete ${selectedIds.size} Drawings`}
+        title={tr("Delete Selected Drawings")}
+        message={tr(
+          "Are you sure you want to permanently delete {0} drawings? This action cannot be undone.",
+          { 0: selectedIds.size },
+        )}
+        confirmText={tr("Delete {0} Drawings", { 0: selectedIds.size })}
         onConfirm={actions.executeBulkPermanentDelete}
         onCancel={() => actions.setShowBulkDeleteConfirm(false)}
       />{" "}
       <ConfirmModal
         isOpen={actions.showImportError.isOpen}
-        title="Import Failed"
+        title={tr("Import Failed")}
         message={actions.showImportError.message}
-        confirmText="OK"
+        confirmText={tr("OK")}
         showCancel={false}
         isDangerous={false}
         onConfirm={() =>

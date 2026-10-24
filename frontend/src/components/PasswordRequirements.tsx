@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import React from "react";
 import { CheckCircle2, Circle } from "lucide-react";
 import {
@@ -16,7 +17,8 @@ export const PasswordRequirements: React.FC<Props> = ({
   policy,
   className,
 }) => {
-  const requirements = getPasswordRequirements(password, policy);
+  const tr = useTranslation();
+  const requirements = getPasswordRequirements(password, policy, tr);
 
   return (
     <ul className={`mt-2 space-y-1 text-xs ${className || ""}`.trim()}>

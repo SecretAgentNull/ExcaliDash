@@ -1,3 +1,4 @@
+import { useTranslation } from "../../context/useTranslation";
 import { useBeforeUnload } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -27,6 +28,8 @@ export const useLoginRateLimitSettings = ({
   setError,
   setSuccess,
 }: UseLoginRateLimitSettingsParams) => {
+  const tr = useTranslation();
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [enabled, setEnabled] = useState(true);
@@ -78,7 +81,7 @@ export const useLoginRateLimitSettings = ({
       setMaxAttempts(nextConfig.max);
       setSavedConfig(nextConfig);
     } catch (err: unknown) {
-      let message = "Failed to load rate limit config";
+      let message = tr("Failed to load rate limit config");
       if (api.isAxiosError(err)) {
         message =
           err.response?.data?.message || err.response?.data?.error || message;
@@ -87,7 +90,7 @@ export const useLoginRateLimitSettings = ({
     } finally {
       setLoading(false);
     }
-  }, [setError]);
+  }, [tr, setError]);
 
   const saveConfig = useCallback(async () => {
     if (saving) return false;
@@ -116,10 +119,10 @@ export const useLoginRateLimitSettings = ({
       setMaxAttempts(nextConfig.max);
       setSavedConfig(nextConfig);
       setAutoSaveQueued(false);
-      toast.success("Login rate limit changes saved");
+      toast.success(tr("Login rate limit changes saved"));
       return true;
     } catch (err: unknown) {
-      let message = "Failed to save rate limit config";
+      let message = tr("Failed to save rate limit config");
       if (api.isAxiosError(err)) {
         message =
           err.response?.data?.message || err.response?.data?.error || message;
@@ -129,12 +132,12 @@ export const useLoginRateLimitSettings = ({
     } finally {
       setSaving(false);
     }
-  }, [saving, normalizedConfig, setError]);
+  }, [tr, saving, normalizedConfig, setError]);
 
   const reset = useCallback(async () => {
     const identifier = resetIdentifier.trim();
     if (!identifier) {
-      setError("Enter an email/username to reset");
+      setError(tr("Enter an email/username to reset"));
       return;
     }
     setResetLoading(true);
@@ -142,10 +145,10 @@ export const useLoginRateLimitSettings = ({
     setSuccess("");
     try {
       await api.api.post("/auth/rate-limit/login/reset", { identifier });
-      setSuccess(`Reset login rate limit for ${identifier}`);
+      setSuccess(tr("Reset login rate limit for {0}", { 0: identifier }));
       setResetIdentifier("");
     } catch (err: unknown) {
-      let message = "Failed to reset rate limit";
+      let message = tr("Failed to reset rate limit");
       if (api.isAxiosError(err)) {
         message =
           err.response?.data?.message || err.response?.data?.error || message;
@@ -154,7 +157,7 @@ export const useLoginRateLimitSettings = ({
     } finally {
       setResetLoading(false);
     }
-  }, [resetIdentifier, setError, setSuccess]);
+  }, [tr, resetIdentifier, setError, setSuccess]);
 
   useEffect(() => {
     if (!authEnabled || !isAdmin) return;

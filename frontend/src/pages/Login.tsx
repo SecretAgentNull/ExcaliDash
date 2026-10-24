@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -15,6 +16,8 @@ import {
 } from "../utils/oidcLogout";
 
 export const Login: React.FC = () => {
+  const tr = useTranslation();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -44,12 +47,12 @@ export const Login: React.FC = () => {
   const oidcErrorMessage = searchParams.get("oidcErrorMessage");
   const oidcReturnTo = searchParams.get("returnTo") || "/";
   const mustReset = Boolean(user?.mustResetPassword) || queryMustReset;
-  const passwordPolicy = getPasswordPolicy();
+  const passwordPolicy = getPasswordPolicy(undefined, tr);
 
   useEffect(() => {
     if (!oidcErrorCode) return;
-    setError(oidcErrorMessage || "OIDC sign-in failed");
-  }, [oidcErrorCode, oidcErrorMessage]);
+    setError(oidcErrorMessage || tr("OIDC sign-in failed"));
+  }, [tr, oidcErrorCode, oidcErrorMessage]);
 
   useEffect(() => {
     if (authStatusError) return;
@@ -117,7 +120,8 @@ export const Login: React.FC = () => {
       }
       navigate("/");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to login";
+      const message =
+        err instanceof Error ? err.message : tr("Failed to login");
       setError(message);
     } finally {
       setLoading(false);
@@ -129,16 +133,16 @@ export const Login: React.FC = () => {
     setError("");
 
     if (!newPassword || !confirmNewPassword) {
-      setError("Please enter and confirm a new password");
+      setError(tr("Please enter and confirm a new password"));
       return;
     }
-    const passwordError = validatePassword(newPassword, passwordPolicy);
+    const passwordError = validatePassword(newPassword, passwordPolicy, tr);
     if (passwordError) {
       setError(passwordError);
       return;
     }
     if (newPassword !== confirmNewPassword) {
-      setError("New passwords do not match");
+      setError(tr("New passwords do not match"));
       return;
     }
 
@@ -158,7 +162,7 @@ export const Login: React.FC = () => {
 
       window.location.href = "/";
     } catch (err: unknown) {
-      let message = "Failed to reset password";
+      let message = tr("Failed to reset password");
       if (api.isAxiosError(err)) {
         message =
           err.response?.data?.message || err.response?.data?.error || message;
@@ -176,21 +180,21 @@ export const Login: React.FC = () => {
           <Logo className="mx-auto h-12 w-auto" />
           <h2 className="auth-heading">
             {mustReset
-              ? "Reset your password"
+              ? tr("Reset your password")
               : oidcEnforced
-                ? `Sign in with ${oidcProvider || "OIDC"}`
-                : "Sign in to your account"}
+                ? tr("Sign in with {0}", { 0: oidcProvider || "OIDC" })
+                : tr("Sign in to your account")}
           </h2>
           {!mustReset && !oidcEnforced && registrationEnabled ? (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Or{" "}
+              {tr("Or")}{" "}
               <Link to="/register" className="ui-link">
-                create a new account
+                {tr("create a new account")}{" "}
               </Link>
             </p>
           ) : mustReset ? (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Choose a new password to continue.
+              {tr("Choose a new password to continue.")}{" "}
             </p>
           ) : null}
         </div>
@@ -200,7 +204,7 @@ export const Login: React.FC = () => {
         >
           {error && (
             <div className="ui-alert-error">
-              <div>{error}</div>
+              <div>{tr(error)}</div>
             </div>
           )}
           {oidcEnforced && !mustReset ? (
@@ -213,7 +217,7 @@ export const Login: React.FC = () => {
                 }}
                 className="ui-button-primary w-full"
               >
-                Continue with {oidcProvider || "OIDC"}
+                {tr("Continue with")} {oidcProvider || "OIDC"}
               </button>
             </div>
           ) : (
@@ -223,7 +227,7 @@ export const Login: React.FC = () => {
                   <>
                     <div>
                       <label htmlFor="email" className="sr-only">
-                        Email address
+                        {tr("Email address")}{" "}
                       </label>
                       <input
                         id="email"
@@ -232,14 +236,14 @@ export const Login: React.FC = () => {
                         autoComplete="email"
                         required
                         className="ui-input block w-full"
-                        placeholder="Email address"
+                        placeholder={tr("Email address")}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                       />
                     </div>
                     <div>
                       <label htmlFor="password" className="sr-only">
-                        Password
+                        {tr("Password")}{" "}
                       </label>
                       <PasswordInput
                         id="password"
@@ -247,7 +251,7 @@ export const Login: React.FC = () => {
                         autoComplete="current-password"
                         required
                         className="ui-input block w-full"
-                        placeholder="Password"
+                        placeholder={tr("Password")}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
@@ -257,7 +261,7 @@ export const Login: React.FC = () => {
                   <>
                     <div>
                       <label htmlFor="newPassword" className="sr-only">
-                        New password
+                        {tr("New password")}{" "}
                       </label>
                       <PasswordInput
                         id="newPassword"
@@ -268,14 +272,14 @@ export const Login: React.FC = () => {
                         maxLength={passwordPolicy.maxLength}
                         pattern={passwordPolicy.patternHtml}
                         className="ui-input block w-full"
-                        placeholder="New password"
+                        placeholder={tr("New password")}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                       />
                     </div>
                     <div>
                       <label htmlFor="confirmNewPassword" className="sr-only">
-                        Confirm new password
+                        {tr("Confirm new password")}{" "}
                       </label>
                       <PasswordInput
                         id="confirmNewPassword"
@@ -285,7 +289,7 @@ export const Login: React.FC = () => {
                         minLength={passwordPolicy.minLength}
                         maxLength={passwordPolicy.maxLength}
                         className="ui-input block w-full"
-                        placeholder="Confirm new password"
+                        placeholder={tr("Confirm new password")}
                         value={confirmNewPassword}
                         onChange={(e) => setConfirmNewPassword(e.target.value)}
                       />
@@ -310,7 +314,7 @@ export const Login: React.FC = () => {
           {!mustReset && !oidcEnforced && (
             <div className="flex justify-end">
               <Link to="/reset-password" className="ui-link text-sm">
-                Forgot your password?
+                {tr("Forgot your password?")}{" "}
               </Link>
             </div>
           )}
@@ -324,11 +328,11 @@ export const Login: React.FC = () => {
               >
                 {mustReset
                   ? loading
-                    ? "Updating..."
-                    : "Set new password"
+                    ? tr("Updating...")
+                    : tr("Set new password")
                   : loading
-                    ? "Signing in..."
-                    : "Sign in"}
+                    ? tr("Signing in...")
+                    : tr("Sign in")}
               </button>
             </div>
           )}
@@ -343,7 +347,7 @@ export const Login: React.FC = () => {
                 }}
                 className="ui-button-secondary w-full"
               >
-                Continue with {oidcProvider || "OIDC"}
+                {tr("Continue with")} {oidcProvider || "OIDC"}
               </button>
             </div>
           )}
@@ -359,7 +363,7 @@ export const Login: React.FC = () => {
                 }}
                 className="ui-link text-sm"
               >
-                Sign in as a different user
+                {tr("Sign in as a different user")}{" "}
               </button>
             </div>
           )}

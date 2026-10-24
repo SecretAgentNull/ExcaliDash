@@ -1,3 +1,4 @@
+import { useEventTranslation } from "../../context/useTranslation";
 import { useCallback, useEffect } from "react";
 import type { NavigateFunction } from "react-router-dom";
 import type { MutableRefObject } from "react";
@@ -75,6 +76,8 @@ export const useEditorSceneLoader = ({
   recordElementVersion,
   normalizeImageElementStatus,
 }: SceneLoaderParams) => {
+  const tr = useEventTranslation();
+
   const resetRefs = useCallback(() => {
     refs.isBootstrappingScene.current = true;
     refs.hasHydratedInitialScene.current = false;
@@ -245,7 +248,7 @@ export const useEditorSceneLoader = ({
       } catch (err) {
         if (cancelled) return;
         console.error("Failed to load drawing", err);
-        let message = "Failed to load drawing";
+        let message = tr("Failed to load drawing");
         if (api.isAxiosError(err)) {
           const responseMessage =
             typeof err.response?.data?.message === "string"
@@ -254,9 +257,9 @@ export const useEditorSceneLoader = ({
           if (responseMessage) {
             message = responseMessage;
           } else if (err.response?.status === 403) {
-            message = "You do not have access to this drawing";
+            message = tr("You do not have access to this drawing");
           } else if (err.response?.status === 404) {
-            message = "Drawing not found";
+            message = tr("Drawing not found");
           }
           if (
             err.response?.status === 403 &&
@@ -292,6 +295,7 @@ export const useEditorSceneLoader = ({
       cancelled = true;
     };
   }, [
+    tr,
     id,
     location.hash,
     location.pathname,

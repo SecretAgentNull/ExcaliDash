@@ -1,3 +1,4 @@
+import { useEventTranslation } from "../../context/useTranslation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MutableRefObject } from "react";
 import { io, type Socket } from "socket.io-client";
@@ -67,6 +68,8 @@ export const useEditorCollaboration = ({
   recordElementVersion,
   onAccessDenied,
 }: UseEditorCollaborationInput) => {
+  const tr = useEventTranslation();
+
   const [socketMe, setSocketMe] = useState<UserIdentity>(me);
   const socketMeRef = useRef<UserIdentity>(socketMe);
   const [peers, setPeers] = useState<Peer[]>([]);
@@ -420,7 +423,7 @@ export const useEditorCollaboration = ({
     socket.on("drawing-server-update", (payload: { drawingId?: string }) => {
       if (!payload?.drawingId || payload.drawingId !== drawingId) return;
       toast.info(
-        "Drawing storage changed on the server. Reloading the editor.",
+        tr("Drawing storage changed on the server. Reloading the editor."),
       );
       window.location.reload();
     });
@@ -465,6 +468,7 @@ export const useEditorCollaboration = ({
       cancelAnimationFrame(animationFrameId.current);
     };
   }, [
+    tr,
     drawingId,
     me,
     isReady,

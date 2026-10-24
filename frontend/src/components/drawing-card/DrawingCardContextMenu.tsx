@@ -1,3 +1,4 @@
+import { useTranslation } from "../../context/useTranslation";
 import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -57,6 +58,8 @@ export const DrawingCardContextMenu: React.FC<DrawingCardContextMenuProps> = ({
   onManageStorage,
   onExport,
 }) => {
+  const tr = useTranslation();
+
   const closeTimer = useRef<number | null>(null);
 
   const openSubmenu = () => {
@@ -100,7 +103,7 @@ export const DrawingCardContextMenu: React.FC<DrawingCardContextMenuProps> = ({
           drawing.accessLevel === "edit" ||
           drawing.accessLevel === "owner") ? (
           <button onClick={onRename} className="ui-menu-item">
-            <PenTool size={14} /> Rename
+            <PenTool size={14} /> {tr("Rename")}{" "}
           </button>
         ) : null}
         {!isShared ? (
@@ -111,7 +114,7 @@ export const DrawingCardContextMenu: React.FC<DrawingCardContextMenuProps> = ({
           >
             <button className="ui-menu-item justify-between">
               <span className="flex items-center gap-2">
-                <FolderInput size={14} /> Move to...
+                <FolderInput size={14} /> {tr("Move to...")}{" "}
               </span>
               <ArrowRight size={12} />
             </button>
@@ -154,14 +157,14 @@ export const DrawingCardContextMenu: React.FC<DrawingCardContextMenuProps> = ({
               }}
               className="ui-menu-item"
             >
-              <Copy size={14} /> Duplicate
+              <Copy size={14} /> {tr("Duplicate")}{" "}
             </button>
           </>
         ) : null}
         {!isShared && storageAvailable ? (
           <>
             <button onClick={onManageStorage} className="ui-menu-item">
-              <HardDrive size={14} /> Manage storage
+              <HardDrive size={14} /> {tr("Manage storage")}{" "}
             </button>
             <div className="ui-menu-separator" />
           </>
@@ -176,7 +179,7 @@ export const DrawingCardContextMenu: React.FC<DrawingCardContextMenuProps> = ({
           ) : (
             <Download size={14} />
           )}
-          {isExporting ? "Exporting..." : "Export"}
+          {isExporting ? tr("Exporting...") : tr("Export")}
         </button>
         {exportError && (
           <div className="mx-1 my-1 rounded-lg border-2 border-rose-200 bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-600 dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-400">
@@ -193,7 +196,7 @@ export const DrawingCardContextMenu: React.FC<DrawingCardContextMenuProps> = ({
               }}
               className="ui-menu-item ui-menu-item-danger"
             >
-              <Trash2 size={14} /> Delete
+              <Trash2 size={14} /> {tr("Delete")}{" "}
             </button>
           </>
         ) : null}
@@ -207,7 +210,7 @@ export const DrawingCardContextMenu: React.FC<DrawingCardContextMenuProps> = ({
               }}
               className="ui-menu-item"
             >
-              <EyeOff size={14} /> Hide from my list
+              <EyeOff size={14} /> {tr("Hide from my list")}{" "}
             </button>
           </>
         ) : null}

@@ -1,3 +1,4 @@
+import { useTranslation } from "./useTranslation";
 import React, {
   createContext,
   useContext,
@@ -66,6 +67,8 @@ const AUTH_ENABLED_CACHE_KEY = "excalidash-auth-enabled";
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const tr = useTranslation();
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [authEnabled, setAuthEnabled] = useState<boolean | null>(null);
@@ -148,7 +151,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           return;
         }
         setAuthStatusError(
-          "Unable to reach the backend API. Check BACKEND_URL, FRONTEND_URL, and your reverse proxy configuration.",
+          tr(
+            "Unable to reach the backend API. Check BACKEND_URL, FRONTEND_URL, and your reverse proxy configuration.",
+          ),
         );
         setAuthEnabled(null);
         setRegistrationEnabled(false);
@@ -204,14 +209,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     } catch (error) {
       console.error("Failed to load user:", error);
       setAuthStatusError(
-        "Unable to initialize authentication state. Check backend/API connectivity and refresh.",
+        tr(
+          "Unable to initialize authentication state. Check backend/API connectivity and refresh.",
+        ),
       );
       localStorage.removeItem(USER_KEY);
       setUser(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tr]);
 
   useEffect(() => {
     loadUser();
@@ -220,7 +227,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const login = async (email: string, password: string) => {
     try {
       if (authEnabled === false) {
-        throw new Error("Authentication is disabled");
+        throw new Error(tr("Authentication is disabled"));
       }
       const response = await authLogin(email, password);
 
@@ -239,10 +246,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           "message" in error.response.data &&
           typeof error.response.data.message === "string"
             ? error.response.data.message
-            : "Login failed";
+            : tr("Login failed");
         throw new Error(message);
       }
-      throw error instanceof Error ? error : new Error("Login failed");
+      throw error instanceof Error ? error : new Error(tr("Login failed"));
     }
   };
 
@@ -254,7 +261,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   ) => {
     try {
       if (authEnabled === false) {
-        throw new Error("Authentication is disabled");
+        throw new Error(tr("Authentication is disabled"));
       }
       const response = await authRegister(email, password, name, setupCode);
 
@@ -273,10 +280,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           "message" in error.response.data &&
           typeof error.response.data.message === "string"
             ? error.response.data.message
-            : "Registration failed";
+            : tr("Registration failed");
         throw new Error(message);
       }
-      throw error instanceof Error ? error : new Error("Registration failed");
+      throw error instanceof Error
+        ? error
+        : new Error(tr("Registration failed"));
     }
   };
 
@@ -288,7 +297,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       // Do not claim that the user signed out when the server session could
       // still be refreshed. This also avoids an enforced-OIDC redirect loop.
       console.error("Logout failed", error);
-      toast.error("Could not sign out. Please try again.");
+      toast.error(tr("Could not sign out. Please try again."));
       return;
     }
     suppressOidcAutoLogin();

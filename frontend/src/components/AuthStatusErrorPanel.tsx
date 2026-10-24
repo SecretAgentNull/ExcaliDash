@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import React from "react";
 
 type AuthStatusErrorPanelProps = {
@@ -11,15 +12,17 @@ export const AuthStatusErrorPanel: React.FC<AuthStatusErrorPanelProps> = ({
   onRetry,
   fullScreen = false,
 }) => {
+  const tr = useTranslation();
+
   const panel = (
     <div className="max-w-lg rounded-md bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-800 dark:text-red-200">
-      <div>{message}</div>
+      <div>{tr(message)}</div>
       <button
         type="button"
         onClick={() => void onRetry()}
         className="ui-button-secondary mt-3 text-xs"
       >
-        Retry connection
+        {tr("Retry connection")}{" "}
       </button>
     </div>
   );

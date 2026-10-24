@@ -1,3 +1,4 @@
+import { useTranslation } from "../../context/useTranslation";
 import React from "react";
 import clsx from "clsx";
 import type { Collection, DrawingSummary } from "../../types";
@@ -25,14 +26,16 @@ export const CollectionPicker: React.FC<CollectionPickerProps> = ({
   onClose,
   onMoveToCollection,
 }) => {
+  const tr = useTranslation();
+
   const { user } = useAuth();
   const showOwner = Boolean(
     user && drawing.userId && drawing.userId !== user.id,
   );
   const collectionName = drawing.collectionId
     ? collections.find((collection) => collection.id === drawing.collectionId)
-        ?.name || "Collection"
-    : "Unorganized";
+        ?.name || tr("Collection")
+    : tr("Unorganized");
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
@@ -54,7 +57,7 @@ export const CollectionPicker: React.FC<CollectionPickerProps> = ({
                 : "bg-slate-50 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400 cursor-pointer border-neutral-200/60 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700/50",
             )}
           >
-            {isShared ? "Shared" : collectionName}
+            {isShared ? tr("Shared") : collectionName}
           </button>
 
           {!isShared && isOpen && (
@@ -97,7 +100,7 @@ export const CollectionPicker: React.FC<CollectionPickerProps> = ({
                   : "bg-amber-50/50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30",
               )}
             >
-              {drawing.accessLevel === "edit" ? "Editor" : "Viewer"}
+              {drawing.accessLevel === "edit" ? tr("Editor") : tr("Viewer")}
             </span>
           )}
       </div>

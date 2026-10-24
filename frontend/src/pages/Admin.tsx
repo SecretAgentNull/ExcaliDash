@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useTranslation } from "../context/useTranslation";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { useAuth } from "../context/AuthContext";
@@ -23,11 +24,13 @@ import {
   USER_KEY,
 } from "../utils/impersonation";
 export const Admin: React.FC = () => {
+  const tr = useTranslation();
+
   const navigate = useNavigate();
   const { user: authUser, authEnabled } = useAuth();
   const isSingleUserOwner = authEnabled === false;
   const isAdmin = isSingleUserOwner || authUser?.role === "ADMIN";
-  const passwordPolicy = getPasswordPolicy();
+  const passwordPolicy = getPasswordPolicy(undefined, tr);
   const {
     collections,
     loadCollections,
@@ -65,18 +68,18 @@ export const Admin: React.FC = () => {
       return;
     }
   }, [authEnabled, isAdmin, navigate]);
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setLoadingUsers(true);
     setError("");
     try {
       const response = await api.api.get<{ users: AdminUser[] }>("/auth/users");
       setUsers(response.data.users || []);
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Failed to load users"));
+      setError(getApiErrorMessage(err, tr("Failed to load users")));
     } finally {
       setLoadingUsers(false);
     }
-  };
+  }, [tr]);
   const generateTempPassword = async (target: AdminUser) => {
     setResetPasswordLoadingId(target.id);
     setError("");
@@ -90,10 +93,12 @@ export const Admin: React.FC = () => {
         email: response.data.user?.email || target.email,
         tempPassword: response.data.tempPassword,
       });
-      setSuccess(`Temporary password generated for ${target.email}`);
+      setSuccess(
+        tr("Temporary password generated for {0}", { 0: target.email }),
+      );
       await loadUsers();
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Failed to reset password"));
+      setError(getApiErrorMessage(err, tr("Failed to reset password")));
     } finally {
       setResetPasswordLoadingId(null);
     }
@@ -103,7 +108,14 @@ export const Admin: React.FC = () => {
     void loadCollections();
     void loadUsers();
     void loadAccessControl();
-  }, [authEnabled, isAdmin, loadAccessControl, loadCollections, navigate]);
+  }, [
+    authEnabled,
+    isAdmin,
+    loadAccessControl,
+    loadCollections,
+    loadUsers,
+    navigate,
+  ]);
   const handleCreateUser = async (
     payload: CreateUserInput,
   ): Promise<boolean> => {
@@ -119,11 +131,11 @@ export const Admin: React.FC = () => {
           a.createdAt.localeCompare(b.createdAt),
         ),
       );
-      setSuccess("User created");
+      setSuccess(tr("User created"));
       setCreateOpen(false);
       return true;
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Failed to create user"));
+      setError(getApiErrorMessage(err, tr("Failed to create user")));
       return false;
     }
   };
@@ -146,21 +158,21 @@ export const Admin: React.FC = () => {
       setUsers((prev) =>
         prev.map((u) => (u.id === id ? response.data.user : u)),
       );
-      setSuccess("User updated");
+      setSuccess(tr("User updated"));
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Failed to update user"));
+      setError(getApiErrorMessage(err, tr("Failed to update user")));
     }
   };
   const startImpersonation = async (target: AdminUser) => {
     setError("");
     setSuccess("");
     if (readImpersonationState()) {
-      setError("Stop the current impersonation before starting a new one.");
+      setError(tr("Stop the current impersonation before starting a new one."));
       return;
     }
     const originalUser = localStorage.getItem(USER_KEY);
     if (!originalUser) {
-      setError("Missing current session user state.");
+      setError(tr("Missing current session user state."));
       return;
     }
     try {
@@ -172,7 +184,7 @@ export const Admin: React.FC = () => {
         impersonator: {
           id: authUser?.id || "unknown",
           email: authUser?.email || "unknown",
-          name: authUser?.name || "Unknown Admin",
+          name: authUser?.name || tr("Unknown Admin"),
         },
         target: {
           id: response.data.user.id,
@@ -185,14 +197,16 @@ export const Admin: React.FC = () => {
       localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
       window.location.href = "/";
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Failed to impersonate user"));
+      setError(getApiErrorMessage(err, tr("Failed to impersonate user")));
     }
   };
   if (authEnabled === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         {" "}
-        <div className="text-gray-600 dark:text-gray-400">Loading...</div>{" "}
+        <div className="text-gray-600 dark:text-gray-400">
+          {tr("Loading...")}
+        </div>{" "}
       </div>
     );
   }
@@ -288,7 +302,10 @@ export const Admin: React.FC = () => {
           />
         ) : null}
       </div>{" "}
-      <Toaster position="bottom-center" />{" "}
+      <Toaster
+        containerAriaLabel={tr("Notifications")}
+        position="bottom-center"
+      />{" "}
     </Layout>
   );
 };

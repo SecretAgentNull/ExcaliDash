@@ -1,3 +1,4 @@
+import { useAppLocale, useTranslation } from "../context/useTranslation";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, RotateCcw, Clock, ChevronDown } from "lucide-react";
@@ -15,15 +16,21 @@ type Props = {
   onPreview: (snapshot: api.DrawingSnapshotFull | null) => void;
 };
 
-function timeAgo(dateStr: string): string {
+function timeAgo(
+  dateStr: string,
+  locale: string,
+  tr: (key: string) => string,
+): string {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return tr("just now");
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60)
+    return new Intl.RelativeTimeFormat(locale).format(-minutes, "minute");
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24)
+    return new Intl.RelativeTimeFormat(locale).format(-hours, "hour");
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return new Intl.RelativeTimeFormat(locale).format(-days, "day");
 }
 
 export const HistoryPanel: React.FC<Props> = ({
@@ -36,6 +43,9 @@ export const HistoryPanel: React.FC<Props> = ({
   onRestoreSnapshot,
   onPreview,
 }) => {
+  const tr = useTranslation();
+  const locale = useAppLocale();
+
   const [snapshots, setSnapshots] = useState<api.DrawingSnapshotSummary[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -153,7 +163,7 @@ export const HistoryPanel: React.FC<Props> = ({
     try {
       const version = getCurrentVersion();
       if (version === null) {
-        throw new Error("Drawing is still loading. Please try again.");
+        throw new Error(tr("Drawing is still loading. Please try again."));
       }
       await onRestoreSnapshot(snapshotId);
       onRestore();
@@ -186,7 +196,7 @@ export const HistoryPanel: React.FC<Props> = ({
         style={position}
         role="dialog"
         aria-modal="false"
-        aria-label="Version history"
+        aria-label={tr("Version history")}
       >
         {/* Header */}
         <div className="flex items-center gap-3 border-b-2 border-slate-100 px-4 py-3.5 dark:border-neutral-800">
@@ -194,7 +204,7 @@ export const HistoryPanel: React.FC<Props> = ({
             <Clock size={17} />
           </div>
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            Version history
+            {tr("Version history")}{" "}
           </h2>
           {totalCount > 0 && (
             <span className="rounded-full border-2 border-slate-800 bg-white px-2 py-0.5 text-[11px] font-semibold dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200">
@@ -206,7 +216,7 @@ export const HistoryPanel: React.FC<Props> = ({
               if (!restoring) onClose();
             }}
             disabled={restoring}
-            aria-label="Close version history"
+            aria-label={tr("Close version history")}
             className="ui-icon-button ml-auto h-8 w-8 border-transparent bg-transparent shadow-none hover:border-slate-200 dark:bg-transparent dark:hover:border-neutral-700"
           >
             <X size={18} />
@@ -217,14 +227,18 @@ export const HistoryPanel: React.FC<Props> = ({
         <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-12 text-slate-400">
-              <span className="text-sm font-semibold">Loading history…</span>
+              <span className="text-sm font-semibold">
+                {tr("Loading history…")}
+              </span>
             </div>
           ) : snapshots.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-12 text-slate-400">
               <Clock size={32} />
-              <span className="text-sm font-semibold">No history yet</span>
+              <span className="text-sm font-semibold">
+                {tr("No history yet")}
+              </span>
               <span className="text-center text-xs font-medium">
-                Versions are saved automatically as you edit.
+                {tr("Versions are saved automatically as you edit.")}{" "}
               </span>
             </div>
           ) : (
@@ -242,14 +256,14 @@ export const HistoryPanel: React.FC<Props> = ({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                        Version {snap.version}
+                        {tr("Version")} {snap.version}
                       </span>
                       <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-neutral-800 dark:text-neutral-400">
-                        {timeAgo(snap.createdAt)}
+                        {timeAgo(snap.createdAt, locale, tr)}
                       </span>
                     </div>
                     <div className="mt-1 text-[11px] font-medium text-slate-400 dark:text-neutral-500">
-                      {new Date(snap.createdAt).toLocaleString()}
+                      {new Date(snap.createdAt).toLocaleString(locale)}
                     </div>
                   </div>
 
@@ -270,10 +284,10 @@ export const HistoryPanel: React.FC<Props> = ({
                       >
                         <RotateCcw size={12} strokeWidth={2.5} />
                         {confirmRestore === snap.id
-                          ? "Confirm?"
+                          ? tr("Confirm?")
                           : restoring
-                            ? "Restoring…"
-                            : "Restore"}
+                            ? tr("Restoring…")
+                            : tr("Restore")}
                       </button>
                     ) : (
                       <ChevronDown
@@ -291,7 +305,7 @@ export const HistoryPanel: React.FC<Props> = ({
         {/* Footer */}
         <div className="border-t-2 border-slate-100 px-4 py-3 dark:border-neutral-800">
           <p className="text-center text-xs font-semibold text-slate-400 dark:text-neutral-500">
-            Versions are kept for 2 days
+            {tr("Versions are kept for 2 days")}{" "}
           </p>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from "../../context/useTranslation";
 import React from "react";
 import { Check } from "lucide-react";
 import clsx from "clsx";
@@ -26,6 +27,8 @@ export const CollectionMoveOptions: React.FC<CollectionMoveOptionsProps> = ({
   unselectedClassName,
   checkSize,
 }) => {
+  const tr = useTranslation();
+
   const moveToCollection = (collectionId: string | null) => {
     onMoveToCollection(drawingId, collectionId);
     onDone();
@@ -43,7 +46,8 @@ export const CollectionMoveOptions: React.FC<CollectionMoveOptionsProps> = ({
             : unselectedClassName,
         )}
       >
-        Unorganized {currentCollectionId === null && <Check size={checkSize} />}
+        {tr("Unorganized")}{" "}
+        {currentCollectionId === null && <Check size={checkSize} />}
       </button>
       {collections.map((collection) => (
         <button

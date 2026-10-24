@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import React, { useState, useEffect } from "react";
 import {
   LayoutGrid,
@@ -41,6 +42,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onDeleteCollection,
   onDrop,
 }) => {
+  const tr = useTranslation();
+
   const { logout, user, authEnabled } = useAuth();
   const { t } = useLocale();
   const [isCreating, setIsCreating] = useState(false);
@@ -97,7 +100,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Logo className="w-10 h-10" />
             <span className="mt-1">ExcaliDash</span>
             <span className="mt-2 font-sans text-xs font-bold text-red-500">
-              Beta
+              {tr("Beta")}{" "}
             </span>
           </h1>
         </div>
@@ -181,7 +184,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     value={newCollectionName}
                     onChange={(e) => setNewCollectionName(e.target.value)}
                     placeholder={t("sidebar.newCollectionPlaceholder")}
-                    aria-label="Collection name"
+                    aria-label={tr("Collection name")}
                     className="ui-input min-w-0 w-full py-1.5 font-medium"
                     onBlur={() => !newCollectionName && setIsCreating(false)}
                     onKeyDown={(event) => {

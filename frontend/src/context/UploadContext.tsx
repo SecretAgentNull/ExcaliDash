@@ -1,3 +1,4 @@
+import { useTranslation } from "./useTranslation";
 import React, {
   createContext,
   useContext,
@@ -44,6 +45,8 @@ export const useUpload = () => {
 export const UploadProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const tr = useTranslation();
+
   const [tasks, setTasks] = useState<UploadTask[]>([]);
 
   const isUploading = tasks.some(
@@ -85,7 +88,7 @@ export const UploadProvider: React.FC<{ children: ReactNode }> = ({
         fileName: f.name,
         status: "error",
         progress: 0,
-        error: "Unsupported file type",
+        error: tr("Unsupported file type"),
       }));
 
       const supportedTasks: UploadTask[] = supportedFiles.map((f) => ({
@@ -123,6 +126,7 @@ export const UploadProvider: React.FC<{ children: ReactNode }> = ({
           targetCollectionId,
           undefined,
           handleProgress,
+          tr,
         );
       } catch (e) {
         console.error("Global upload error", e);
@@ -130,13 +134,13 @@ export const UploadProvider: React.FC<{ children: ReactNode }> = ({
           if (t.status !== "error") {
             updateTask(t.id, {
               status: "error",
-              error: "Upload failed unexpectedly",
+              error: tr("Upload failed unexpectedly"),
             });
           }
         });
       }
     },
-    [updateTask],
+    [tr, updateTask],
   );
 
   return (

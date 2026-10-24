@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import * as api from "../api";
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
@@ -34,6 +35,8 @@ export const Editor: React.FC = () => {
 };
 
 const ExcalidrawEditor: React.FC = () => {
+  const tr = useTranslation();
+
   useKeyboardLayoutFix();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -44,7 +47,7 @@ const ExcalidrawEditor: React.FC = () => {
     "none" | "view" | "edit" | "owner"
   >("none");
   const canEdit = accessLevel === "edit" || accessLevel === "owner";
-  const [drawingName, setDrawingName] = useState("Drawing Editor");
+  const [drawingName, setDrawingName] = useState(tr("Drawing Editor"));
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState("");
   const [initialData, setInitialData] = useState<any>(null);

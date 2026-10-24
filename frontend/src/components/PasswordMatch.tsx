@@ -1,3 +1,4 @@
+import { useTranslation } from "../context/useTranslation";
 import React from "react";
 import { Check, X } from "lucide-react";
 
@@ -12,6 +13,8 @@ export const PasswordMatch: React.FC<PasswordMatchProps> = ({
   confirmPassword,
   className = "",
 }) => {
+  const tr = useTranslation();
+
   if (!confirmPassword) return null;
 
   const matches = password === confirmPassword;
@@ -31,7 +34,7 @@ export const PasswordMatch: React.FC<PasswordMatchProps> = ({
       ) : (
         <X size={14} aria-hidden="true" />
       )}
-      {matches ? "Passwords match" : "Passwords do not match"}
+      {matches ? tr("Passwords match") : tr("Passwords do not match")}
     </p>
   );
 };
