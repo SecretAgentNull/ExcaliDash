@@ -97,3 +97,12 @@ different fork, and `EXCALIDASH_TAG` to select a release (`latest` by default,
 `dev` for development). New GHCR packages may be private; make both packages
 public in GitHub's package settings for anonymous pulls, or authenticate Docker
 with an account that has package read access.
+
+To deploy the image pair published from `dev`, use:
+
+```sh
+EXCALIDASH_TAG=dev docker compose -f docker-compose.prod.yml pull
+EXCALIDASH_TAG=dev docker compose -f docker-compose.prod.yml up -d
+```
+
+The `latest` tag is published only by a successful build on `main`.

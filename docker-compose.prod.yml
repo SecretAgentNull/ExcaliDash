@@ -1,3 +1,6 @@
+# Pushes to dev publish :dev; :latest is published only from main.
+# Deploy this fork's development build with:
+# EXCALIDASH_TAG=dev docker compose -f docker-compose.prod.yml up -d
 services:
   backend:
     image: ${EXCALIDASH_IMAGE_PREFIX:-ghcr.io/secretagentnull/excalidash}-backend:${EXCALIDASH_TAG:-latest}
