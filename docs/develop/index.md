@@ -85,6 +85,12 @@ no Docker Hub secret is required. Pushes to `dev` publish development images
 and pushes to `main` publish stable images, after tests pass. Pull requests
 and manual runs build without publishing.
 
+Forks retain the upstream `VERSION` without introducing their own release versions.
+GitHub release creation and release-driven branch synchronization run only in
+`ZimengXiong/ExcaliDash`. Container builds still use commit-specific development
+tags and the upstream version for stable images; these do not change the app version
+or create Git tags or GitHub releases in the fork.
+
 The production Compose file defaults to this fork's images at
 `ghcr.io/secretagentnull/excalidash`. Set `EXCALIDASH_IMAGE_PREFIX` to use a
 different fork, and `EXCALIDASH_TAG` to select a release (`latest` by default,

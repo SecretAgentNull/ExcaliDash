@@ -217,7 +217,8 @@ jobs:
             platforms="linux/amd64,linux/arm64"
 
             release_tag="v${version}"
-            if git show-ref --verify --quiet "refs/tags/${release_tag}"; then
+            # Forks keep upstream's VERSION and may carry its existing release tag.
+            if [ "$GITHUB_REPOSITORY" = "ZimengXiong/ExcaliDash" ] && git show-ref --verify --quiet "refs/tags/${release_tag}"; then
               tagged_sha="$(git rev-list -n 1 "$release_tag")"
               if [ "$tagged_sha" != "$GITHUB_SHA" ]; then
                 echo "$release_tag already belongs to $tagged_sha." >&2
@@ -376,7 +377,7 @@ jobs:
   github-release:
     name: GitHub Release
     needs: image-builds
-    if: needs.image-builds.outputs.stable == 'true'
+    if: github.repository == 'ZimengXiong/ExcaliDash' && needs.image-builds.outputs.stable == 'true'
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -410,7 +411,7 @@ jobs:
   github-dev-release:
     name: GitHub Dev Release
     needs: image-builds
-    if: needs.image-builds.outputs.publish == 'true' && needs.image-builds.outputs.stable != 'true'
+    if: github.repository == 'ZimengXiong/ExcaliDash' && needs.image-builds.outputs.publish == 'true' && needs.image-builds.outputs.stable != 'true'
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -437,7 +438,7 @@ jobs:
   sync-dev:
     name: Sync Main Back To Dev
     needs: [image-builds, github-release]
-    if: needs.image-builds.outputs.stable == 'true'
+    if: github.repository == 'ZimengXiong/ExcaliDash' && needs.image-builds.outputs.stable == 'true'
     runs-on: ubuntu-24.04
     permissions:
       contents: write
