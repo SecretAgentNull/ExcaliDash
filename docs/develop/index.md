@@ -83,7 +83,13 @@ CI publishes images to `ghcr.io/<owner>/<repository>-backend` and
 It authenticates using the built-in `GITHUB_TOKEN` with `packages: write`;
 no Docker Hub secret is required. Pushes to `dev` publish development images
 and pushes to `main` publish stable images, after tests pass. Pull requests
-and manual runs build without publishing.
+build without publishing. Manual runs build without publishing by default; select
+**Publish container images** on `dev` or `main` to publish a deployable image pair.
+For example:
+
+```sh
+gh workflow run CI --ref dev -f publish_images=true
+```
 
 Forks retain the upstream `VERSION` without introducing their own release versions.
 GitHub release creation and release-driven branch synchronization run only in

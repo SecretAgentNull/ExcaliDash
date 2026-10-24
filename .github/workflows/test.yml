@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main, dev]
   workflow_dispatch:
+    inputs:
+      publish_images:
+        description: "Publish container images (main or dev only)"
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -193,6 +198,8 @@ jobs:
       - name: Derive image metadata
         id: metadata
         shell: bash
+        env:
+          PUBLISH_IMAGES: ${{ inputs.publish_images && 'true' || 'false' }}
         run: |
           version="$(tr -d '[:space:]' < VERSION)"
           short_sha="${GITHUB_SHA::7}"
@@ -206,11 +213,16 @@ jobs:
           image_tag="ci-${short_sha}"
           platforms="linux/amd64"
 
-          if [ "$GITHUB_EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/dev ]; then
+          publish_event=false
+          if [ "$GITHUB_EVENT_NAME" = push ] || { [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] && [ "$PUBLISH_IMAGES" = true ]; }; then
+            publish_event=true
+          fi
+
+          if [ "$publish_event" = true ] && [ "$GITHUB_REF" = refs/heads/dev ]; then
             publish=true
             image_tag="${version}-dev.${short_sha}"
             platforms="linux/amd64,linux/arm64"
-          elif [ "$GITHUB_EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/main ]; then
+          elif [ "$publish_event" = true ] && [ "$GITHUB_REF" = refs/heads/main ]; then
             publish=true
             stable=true
             image_tag="${version}"
