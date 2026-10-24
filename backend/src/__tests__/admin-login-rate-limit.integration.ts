@@ -48,6 +48,7 @@ let container: HTMLElement;
 let root: ReturnType<typeof createRoot>;
 let settings: any;
 let useLoginRateLimitSettings: any;
+let localization: { useTranslation: () => (...args: any[]) => string };
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -58,6 +59,11 @@ beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   container = document.getElementById("root")!;
   root = createRoot(container);
+  const { translateUI } = loadFrontendModule("locales/index.ts", {
+    "./ru": loadFrontendModule("locales/ru.ts", {}),
+  });
+  const translateEnglish = translateUI.bind(null, "en");
+  localization = { useTranslation: () => translateEnglish };
   api.get.mockResolvedValue({ data: { config, users: [] } });
   api.put.mockImplementation(async (_url, payload) => ({
     data: { config: payload },
@@ -69,6 +75,7 @@ beforeEach(() => {
       "react-router-dom": router,
       sonner: { toast },
       "../../api": { api, isAxiosError: () => false },
+      "../../context/useTranslation": localization,
     },
   ));
 });
@@ -103,6 +110,7 @@ const renderAdmin = async (
   const loadAccessControl = vi.fn();
   const loadCollections = vi.fn();
   const { Admin } = loadFrontendModule("pages/Admin.tsx", {
+    "../context/useTranslation": localization,
     "react-router-dom": router,
     "../components/Layout": { Layout },
     "../context/AuthContext": {
