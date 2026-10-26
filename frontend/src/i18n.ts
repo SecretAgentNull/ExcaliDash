@@ -23,7 +23,7 @@ const messages = {
   },
   ru: {
     "sidebar.library": "Библиотека",
-    "sidebar.allDrawings": "Все рисунки",
+    "sidebar.allDrawings": "Все доски",
     "sidebar.sharedWithMe": "Доступные мне",
     "sidebar.unorganized": "Без коллекции",
     "sidebar.collections": "Коллекции",
@@ -35,7 +35,7 @@ const messages = {
     "sidebar.owner": "Владелец",
     "sidebar.deleteCollection": "Удалить коллекцию",
     "sidebar.deleteCollectionMessage":
-      "Удалить эту коллекцию? Все рисунки из неё будут перемещены в раздел «Без коллекции».",
+      "Удалить эту коллекцию? Все доски из неё будут перемещены в раздел «Без коллекции».",
     "sidebar.trash": "Корзина",
     "sidebar.profile": "Профиль",
     "sidebar.admin": "Администрирование",
