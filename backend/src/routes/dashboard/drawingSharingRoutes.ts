@@ -17,8 +17,6 @@ export const registerDrawingSharingRoutes = (
     invalidateDrawingsCache,
     config,
     logAuditEvent,
-    resolveDefaultTtlMs,
-    resolveMaxTtlMs,
     revalidateDrawingAccess,
   } = context;
 
@@ -254,56 +252,11 @@ export const registerDrawingSharingRoutes = (
           .json({ error: "Validation error", message: "Invalid permission" });
       }
 
-      const now = Date.now();
-      const maxTtlMs = resolveMaxTtlMs();
-      const defaultTtlMs = resolveDefaultTtlMs(permission);
-      const effectiveDefaultTtlMs =
-        permission === "edit" ? Math.min(defaultTtlMs, maxTtlMs) : defaultTtlMs;
-      const hasExpiresAtKey = Object.prototype.hasOwnProperty.call(
-        req.body ?? {},
-        "expiresAt",
-      );
-      const rawExpiresAt = req.body?.expiresAt;
-
-      let expiresAt: Date | null;
-      if (hasExpiresAtKey && rawExpiresAt === null) {
-        // Explicit null expiry means "never auto-disable" for both view and edit
-        // links. Only non-null values are subject to the max-TTL cap below.
-        expiresAt = null;
-      } else {
-        const requestedExpiresAt =
-          typeof rawExpiresAt === "string" && rawExpiresAt.trim().length > 0
-            ? new Date(rawExpiresAt.trim())
-            : null;
-        const hasValidRequestedExpiry = Boolean(
-          requestedExpiresAt && Number.isFinite(requestedExpiresAt.getTime()),
-        );
-
-        if (hasValidRequestedExpiry && requestedExpiresAt) {
-          const candidateTtlMs = requestedExpiresAt.getTime() - now;
-          if (candidateTtlMs < 60_000) {
-            return res.status(400).json({
-              error: "Validation error",
-              message: "Expiry must be at least 1 minute in the future",
-            });
-          }
-          const ttlMs =
-            permission === "edit"
-              ? Math.min(candidateTtlMs, maxTtlMs)
-              : candidateTtlMs;
-          expiresAt = new Date(now + ttlMs);
-        } else if (
-          hasExpiresAtKey &&
-          rawExpiresAt !== undefined &&
-          rawExpiresAt !== null
-        ) {
-          return res.status(400).json({
-            error: "Validation error",
-            message: "Invalid expiry",
-          });
-        } else {
-          expiresAt = new Date(now + effectiveDefaultTtlMs);
-        }
+      if (req.body?.expiresAt != null) {
+        return res.status(400).json({
+          error: "Validation error",
+          message: "Share links do not support expiration",
+        });
       }
 
       // Passphrase support is currently disabled. We keep passphraseHash nullable for backwards compatibility.
@@ -326,7 +279,7 @@ export const registerDrawingSharingRoutes = (
           permission,
           tokenHash,
           passphraseHash: passphraseHashValue,
-          expiresAt,
+          expiresAt: null,
           createdByUserId: req.user.id,
         },
         select: {
@@ -348,7 +301,7 @@ export const registerDrawingSharingRoutes = (
           details: {
             drawingId: id,
             permission,
-            expiresAt: expiresAt ? expiresAt.toISOString() : null,
+            expiresAt: null,
           },
         });
       }

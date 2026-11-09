@@ -4,7 +4,7 @@ import { authEnv } from "./auth";
 import { oidcEnv } from "./oidc";
 import { securityEnv } from "./security";
 import { storageEnv, backupEnv } from "./storage";
-import { updateCheckEnv, linkSharingEnv } from "./misc";
+import { updateCheckEnv } from "./misc";
 import { frontendEnv } from "./frontend";
 
 export type { EnvVarSpec } from "./types";
@@ -18,7 +18,6 @@ export const ENV_REGISTRY: readonly EnvVarSpec[] = [
   ...storageEnv,
   ...backupEnv,
   ...updateCheckEnv,
-  ...linkSharingEnv,
   ...frontendEnv,
 ];
 

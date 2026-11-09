@@ -29,7 +29,7 @@ Collections group related drawings. Right-click a collection in the sidebar and 
 
 ## Share a link
 
-In the drawing's **Share** controls, open **Link access** to choose **Restricted** or **Anyone with the link**. Choose viewing or editing permission and an expiration when available, then copy the link. Anyone who receives an enabled link can use the access it grants, subject to your instance's sharing policy. Revoke the link when that access is no longer needed.
+In the drawing's **Share** controls, open **Link access** to choose **Restricted** or **Anyone with the link**. Choose viewing or editing permission, then copy the link. Links remain active until revoked. Anyone who receives an enabled link can use the access it grants, subject to your instance's sharing policy. Revoke the link when that access is no longer needed.
 
 <ThemeScreenshot light="/images/screenshots/share-link-light.png" dark="/images/screenshots/share-link.png" alt="Drawing Share dialog with Link access choices open" />
 

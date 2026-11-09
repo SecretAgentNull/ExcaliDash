@@ -291,7 +291,7 @@ export const createLinkShare = async (
   drawingId: string,
   params: {
     permission: "view" | "edit";
-    expiresAt?: string | null;
+    expiresAt?: null;
     passphrase?: string;
   },
 ): Promise<{ share: DrawingLinkShareRow }> => {

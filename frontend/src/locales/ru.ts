@@ -146,6 +146,8 @@ export const russianMessages = {
   "Disable in 30 days": "Отключить через 30 дней",
   "Never auto-disable": "Не отключать автоматически",
   "Disable at...": "Отключить в…",
+  "Share links do not support expiration":
+    "Для ссылок нельзя задать срок действия",
   "Link does not expire": "Ссылка не имеет срока действия",
   "Link will expire": "Срок действия ссылки истекает",
   "Share Collection": "Поделиться коллекцией",

@@ -24,11 +24,9 @@ import {
   readString,
 } from "./config/env";
 import {
-  type LinkShareConfig,
   type UpdateCheckConfig,
   parseDrawingsCacheTtlMs,
   parseTrustProxy,
-  resolveLinkShareConfig,
   resolveUpdateCheckConfig,
 } from "./config/derived";
 import { type MailConfig, resolveMailConfig } from "./config/mail";
@@ -93,7 +91,6 @@ interface Config {
   passwordPolicy: PasswordPolicyConfig;
   backups: BackupConfig;
   s3: S3Config;
-  linkShare: LinkShareConfig;
   updateCheck: UpdateCheckConfig;
   mail: MailConfig;
 }
@@ -404,7 +401,6 @@ export const config: Config = {
   passwordPolicy: resolvePasswordPolicyConfig(),
   backups: resolveBackupConfig(),
   s3: resolveS3Config(),
-  linkShare: resolveLinkShareConfig(),
   updateCheck: resolveUpdateCheckConfig(),
   mail: resolveMailConfig(),
 };
